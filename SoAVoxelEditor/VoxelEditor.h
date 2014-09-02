@@ -25,7 +25,7 @@ public:
 	VoxelEditor();
 	~VoxelEditor();
 
-	void initialize();
+	void initialize(int width, int height, int length);
 
 	void draw(class Camera *camera);
 

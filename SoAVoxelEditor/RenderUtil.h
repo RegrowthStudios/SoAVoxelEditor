@@ -19,6 +19,7 @@ public:
     static void releaseWireframeBox();
 	static void initializeReferenceVoxel();
 	static void drawReferenceVoxel(class Camera* camera, glm::vec3 position, vector <glm::vec3> &brushCoords);
+	static void changeReferenceColor(glm::vec4 color);
 
 private:
 	static Mesh *_mesh, *_referenceCubeMesh;

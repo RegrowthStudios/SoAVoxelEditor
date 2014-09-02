@@ -83,7 +83,18 @@ void initialize()
 
 	loadOptions("Data/options.ini");
 
-    voxelEditor.initialize();
+	std::cout << "Please input a size for your model" << std::endl;
+	int width;
+	int height;
+	int length;
+	std::string input;
+	std::cin >> input;
+	width = std::stoi(input);
+	std::cin >> input;
+	height = std::stoi(input);
+	std::cin >> input;
+	length = std::stoi(input);
+    voxelEditor.initialize(width, height, length);
 
 	initializeShaders();
 	
@@ -230,13 +241,13 @@ void control() {
                 voxelEditor.cycleState();
 				break;
 			case SDLK_z:
-				if (Keys[SDLK_LCTRL].pr == 1){
+				if (Keys[SDLK_LCTRL].pr){
 					printf("undo called\n");
 					voxelEditor.undo();
 				}
 				break;
 			case SDLK_y:
-				if (Keys[SDLK_LCTRL].pr == 1){
+				if (Keys[SDLK_LCTRL].pr){
 					printf("redo called\n");
 					voxelEditor.redo();
 				}
@@ -255,35 +266,51 @@ void control() {
                 voxelEditor.setCurrentVoxel(v);
                 break;
 			case SDLK_c:
-				v.type = 'b';
-				int color[4];
-				cout << "Red: ";
-				cin >> color[0];
-				cout << "Green: ";
-				cin >> color[1];
-				cout << "Blue: ";
-				cin >> color[2];
-				cout << "Alpha: ";
-				cin >> color[3];
-				//printf("current voxel color input format: r g b a\n");
-				//scanf("%d %d %d %d", color[0], color[1], color[2], color[3]);
-				v.color[0] = color[0];
-				v.color[1] = color[1];
-				v.color[2] = color[2];
-				v.color[3] = color[3];
-				cout << "Color inputs are " << v.color[0] << " " << v.color[1] << " " << v.color[2] << endl;
-				voxelEditor.setCurrentVoxel(v);
+					v.type = 'b';
+					int color[4];
+					cout << "Red: ";
+					cin >> color[0];
+					cout << "Green: ";
+					cin >> color[1];
+					cout << "Blue: ";
+					cin >> color[2];
+					cout << "Alpha: ";
+					cin >> color[3];
+					//printf("current voxel color input format: r g b a\n");
+					//scanf("%d %d %d %d", color[0], color[1], color[2], color[3]);
+					if (Keys[SDLK_LCTRL].pr){
+						RenderUtil::changeReferenceColor(glm::vec4(color[0], color[1], color[2], color[3]));
+					}
+					else{
+						v.color[0] = color[0];
+						v.color[1] = color[1];
+						v.color[2] = color[2];
+						v.color[3] = color[3];
+						cout << "Color inputs are " << v.color[0] << " " << v.color[1] << " " << v.color[2] << endl;
+						voxelEditor.setCurrentVoxel(v);
+					}
 				break;
 			case SDLK_x:
-				v = *voxelEditor.getCurrentVoxel();
-				cout << "_currentVoxel color: " << v.color[0] << " " << v.color[1] << " " << v.color[2] << " " << v.color[3] << endl;
+				int height, width, length;
+				cout << "GLubyte size: " << sizeof(GLubyte) << endl;
+				cout << "glm::vec3 size: " << sizeof(glm::vec3) << endl;
+				printf("height: ");
+				cin >> height;
+				printf("\nwidth: ");
+				cin >> width;
+				printf("\nlength: ");
+				cin >> length;
+				BlockMesh *tempMesh;
+				tempMesh = new BlockMesh[height * width * length];
+				printf("Size of mesh: %d MB", height * width * length * sizeof(BlockVertex) >> 20);
+				printf("\ndone\n");
+				delete tempMesh;
 				break;
 			case SDLK_b:
 				voxelEditor.brushRange();
 				break;
             }
 			break;
-
 		case SDL_KEYUP:
 			Keys[evnt.key.keysym.sym].pr = false;
 			break;

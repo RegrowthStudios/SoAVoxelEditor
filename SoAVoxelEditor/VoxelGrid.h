@@ -16,6 +16,7 @@ public:
 
     void drawVoxels(Camera *camera);
     void drawGrid(Camera *camera);
+	void remesh();
 
     //getters
     int getWidth() const { return _width; }

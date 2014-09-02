@@ -232,9 +232,9 @@ void RenderUtil::initializeReferenceVoxel(){
 		_voxBaseVerts.verts[i].normal.y = cubeNormals[i * 3 + 1];
 		_voxBaseVerts.verts[i].normal.z = cubeNormals[i * 3 + 2];
 
-		_voxBaseVerts.verts[i].color[0] = 255;
-		_voxBaseVerts.verts[i].color[1] = 255;
-		_voxBaseVerts.verts[i].color[2] = 255;
+		_voxBaseVerts.verts[i].color[0] = 0;
+		_voxBaseVerts.verts[i].color[1] = 0;
+		_voxBaseVerts.verts[i].color[2] = 0;
 		_voxBaseVerts.verts[i].color[3] = 100;
 	}
 
@@ -330,4 +330,13 @@ void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 positi
 	}
 
 	blockShader.unBind();
+}
+
+void RenderUtil::changeReferenceColor(glm::vec4 color){
+	for (int i = 0; i < 24; i++){
+		_voxBaseVerts.verts[i].color[0] = color.r;
+		_voxBaseVerts.verts[i].color[1] = color.g;
+		_voxBaseVerts.verts[i].color[2] = color.b;
+		_voxBaseVerts.verts[i].color[3] = color.a;
+	}
 }

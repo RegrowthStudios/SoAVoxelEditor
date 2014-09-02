@@ -21,18 +21,7 @@ VoxelEditor::~VoxelEditor()
 {
 }
 
-void VoxelEditor::initialize() {
-    std::cout << "Please input a size for your model" << std::endl;
-    int width;
-    int height;
-    int length;
-	std::string input;
-    std::cin >> input;
-    width = std::stoi(input);
-    std::cin >> input;
-    height = std::stoi(input);
-    std::cin >> input;
-    length = std::stoi(input);
+void VoxelEditor::initialize(int width, int height, int length) {
     _voxelGrid = new VoxelGrid(width, height, length);
 	//_voxelGrid = new VoxelGrid(10, 10, 10);
     _currentVoxel = new Voxel;
@@ -120,6 +109,8 @@ void VoxelEditor::removeVoxel(int x, int y, int z) {
 
 		tempComList.push_back(c);
 		newCommand(tempComList);
+
+		_voxelGrid->remesh();
 	}
 }
 
@@ -178,12 +169,14 @@ void VoxelEditor::removeRange(int x1, int y1, int z1, int x2, int y2, int z2) {
                     c->coord.x = i;
                     c->coord.y = j;
                     c->coord.z = k;
+					c->v = new Voxel;
 					*c->v = tv;
 					tempComList.push_back(c);
                 }
             }
         }
     }
+	_voxelGrid->remesh();
     if(tempComList.size() > 0) newCommand(tempComList);
 }
 
@@ -426,17 +419,21 @@ void VoxelEditor::newCommand(vector <Command*> lCom) {
 }
 
 void VoxelEditor::execute(vector <Command*> lCom) {
+	bool rCheck = 0;
 	for (int i = 0; i < lCom.size(); i++){
 		switch (lCom[i]->type)
 		{
 		case 'i':
 			_voxelGrid->removeVoxel(lCom[i]->coord.x, lCom[i]->coord.y, lCom[i]->coord.z);
+			rCheck = 1;
 			break;
 		case 'r':
 			_voxelGrid->addVoxel(*lCom[i]->v, lCom[i]->coord.x, lCom[i]->coord.y, lCom[i]->coord.z);
 			break;
 		}
 	}
+	if (rCheck)
+		_voxelGrid->remesh();
 }
 
 void VoxelEditor::undo(){

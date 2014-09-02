@@ -105,8 +105,8 @@ void VoxelRenderer::addVoxel(int x, int y, int z, const GLubyte* color) {
         tv.position.x += x;
         tv.position.y += y;
         tv.position.z += z;
-        for(int i = 0; i < 4; i++)
-            tv.color[i] = color[i];
+        for(int j = 0; j < 4; j++)
+            tv.color[j] = color[j];
 
         _currentVerts.push_back(tv);
     }
@@ -136,4 +136,105 @@ void VoxelRenderer::selectVoxel(int x, int y, int z, bool selected) {
             break;
         }
     }
+}
+
+void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length){
+	_currentVerts.clear();
+	BlockVertex tv;
+	Voxel currentVox;
+	
+	int layerSize = width * length;
+	for (int z = 0; z < length; z++){
+		for (int y = 0; y < height; y++){
+			for (int x = 0; x < width; x++){
+				currentVox = voxels[z*layerSize + y*width + x];
+				if (currentVox.type != '/0' && currentVox.type != 0){
+					if (z < length - 1){//front face
+						if (voxels[(z + 1)*layerSize + y*width + x].type == '\0' || voxels[(z + 1)*layerSize + y*width + x].type == 0){
+							for (int i = 0; i < 4; i++){
+								tv = _baseMesh.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								for (int j = 0; j < 4; j++)
+									tv.color[j] = currentVox.color[j];
+								_currentVerts.push_back(tv);
+							}
+							_changed = true;
+						}
+					}
+					if (x < width - 1){//right face
+						if (voxels[z*layerSize + y*width + x + 1].type == '\0' || voxels[z*layerSize + y*width + x + 1].type == '\0'){
+							for (int i = 4; i < 8; i++){
+								tv = _baseMesh.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								for (int j = 0; j < 4; j++)
+									tv.color[j] = currentVox.color[j];
+								_currentVerts.push_back(tv);
+							}
+							_changed = true;
+						}
+					}
+					if (y < width - 1){//top face
+						if (voxels[z*layerSize + (y + 1)*width + x].type == '\0' || voxels[z*layerSize + (y + 1)*width + x].type == 0){
+							for (int i = 8; i < 12; i++){
+								tv = _baseMesh.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								for (int j = 0; j < 4; j++)
+									tv.color[j] = currentVox.color[j];
+								_currentVerts.push_back(tv);
+							}
+							_changed = true;
+						}
+					}
+					if (x > 0){//left face
+						if (voxels[z*layerSize + y*width + x - 1].type == '\0' || voxels[z*layerSize + y*width + x - 1].type == 0){
+							for (int i = 12; i < 16; i++){
+								tv = _baseMesh.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								for (int j = 0; j < 4; j++)
+									tv.color[j] = currentVox.color[j];
+								_currentVerts.push_back(tv);
+							}
+							_changed = true;
+						}
+					}
+					if (y > 0){//bottom face
+						if (voxels[z*layerSize + (y - 1)*width + x].type == '\0' || voxels[z*layerSize + (y - 1)*width + x].type == 0){
+							for (int i = 16; i < 20; i++){
+								tv = _baseMesh.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								for (int j = 0; j < 4; j++)
+									tv.color[j] = currentVox.color[j];
+								_currentVerts.push_back(tv);
+							}
+							_changed = true;
+						}
+					}
+					if (z > 0){//back face
+						if (voxels[(z - 1)*layerSize + y*width + x].type == '\0' || voxels[(z - 1)*layerSize + y*width + x].type == 0){
+							for (int i = 20; i < 24; i++){
+								tv = _baseMesh.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								for (int j = 0; j < 4; j++)
+									tv.color[j] = currentVox.color[j];
+								_currentVerts.push_back(tv);
+							}
+							_changed = true;
+						}
+					}
+				}
+			}
+		}
+	}
 }

@@ -34,7 +34,7 @@ bool VoxelGrid::addVoxel(const Voxel& newV, int x, int y, int z){
         return 0;
     }
 
-    if (tempV->type == '\0'){
+    if (tempV->type == 0){
         _voxelCount++;
         tempV->type = newV.type;
         for(int i = 0; i < 4; i++)
@@ -58,7 +58,7 @@ bool VoxelGrid::removeVoxel(int x, int y, int z){
         _voxelCount--;
         tempV->type = 0;
         
-        VoxelRenderer::removeVoxel(x, y, z);
+		//VoxelRenderer::removeVoxel(x, y, z);
     }
 	return 1;
 }
@@ -334,4 +334,8 @@ void VoxelGrid::drawVoxels(Camera *camera) {
     }
 
     VoxelRenderer::drawVoxels(camera);
+}
+
+void VoxelGrid::remesh(){
+	VoxelRenderer::remesh(_voxels, _width, _height, _length);
 }
