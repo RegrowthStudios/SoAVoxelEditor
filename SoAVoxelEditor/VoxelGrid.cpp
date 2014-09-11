@@ -20,7 +20,7 @@ _voxelCount(0)
     for(int i = 0; i < 3; i++)
         tmpVoxel.color[i] = 0;
     tmpVoxel.color[3] = 255;
-    tmpVoxel.type = 0;
+    tmpVoxel.type = '\0';
     _voxels = new Voxel[_size];
     for(int i = 0; i < _size; i++) {
         _voxels[i] = Voxel();
@@ -34,7 +34,7 @@ bool VoxelGrid::addVoxel(const Voxel& newV, int x, int y, int z){
         return 0;
     }
 
-    if (tempV->type == 0){
+    if (tempV->type == '\0'){
         _voxelCount++;
         tempV->type = newV.type;
         for(int i = 0; i < 4; i++)
@@ -51,12 +51,12 @@ bool VoxelGrid::removeVoxel(int x, int y, int z){
     Voxel *tempV = getVoxel(x, y, z);
     if (!tempV) return false;
 
-    if (tempV->type == 0){
+    if (tempV->type == '\0'){
         //std::printf("Nothing to remove at <%d,%d,%d>.\n", x, y, z);
 		return false;
     } else {
         _voxelCount--;
-        tempV->type = 0;
+        tempV->type = '\0';
         
 		//VoxelRenderer::removeVoxel(x, y, z);
     }
@@ -333,9 +333,10 @@ void VoxelGrid::drawVoxels(Camera *camera) {
         return;
     }
 
-    VoxelRenderer::drawVoxels(camera);
+   // VoxelRenderer::drawVoxels(camera);
+	VoxelRenderer::drawChunks(camera);
 }
 
-void VoxelGrid::remesh(){
-	VoxelRenderer::remesh(_voxels, _width, _height, _length);
+void VoxelGrid::remesh(vector <int> chunks){
+	VoxelRenderer::remesh(_voxels, _width, _height, _length, chunks);
 }
