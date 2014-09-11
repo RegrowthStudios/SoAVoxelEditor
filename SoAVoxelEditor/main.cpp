@@ -95,6 +95,7 @@ void initialize()
 	std::cin >> input;
 	length = std::stoi(input);
     voxelEditor.initialize(width, height, length);
+	//voxelEditor.initialize(100, 100, 100);
 
 	initializeShaders();
 	

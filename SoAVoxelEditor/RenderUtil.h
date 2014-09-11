@@ -20,11 +20,12 @@ public:
 	static void initializeReferenceVoxel();
 	static void drawReferenceVoxel(class Camera* camera, glm::vec3 position, vector <glm::vec3> &brushCoords);
 	static void changeReferenceColor(glm::vec4 color);
+	static void meshBrush(vector <bool> brushCoords, int width, int height, int length);
 
 private:
 	static Mesh *_mesh, *_referenceCubeMesh;
 	static BlockMesh _voxVerts, _voxBaseVerts;
-	static GLuint *_referenceCubeIndices;
+	static GLuint *_referenceCubeIndices, *_brushIndices;
 	static glm::vec3 _lastPosition;
 	static vector <BlockVertex> _brushVerts;
 };

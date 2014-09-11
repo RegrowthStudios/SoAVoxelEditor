@@ -7,6 +7,7 @@
 Mesh* RenderUtil::_mesh = nullptr;
 Mesh* RenderUtil::_referenceCubeMesh = nullptr;
 GLuint* RenderUtil::_referenceCubeIndices = new GLuint[36];
+GLuint* RenderUtil::_brushIndices;
 glm::vec3 RenderUtil::_lastPosition = glm::vec3(-1, -1, -1);
 BlockMesh RenderUtil::_voxVerts = BlockMesh();
 BlockMesh RenderUtil::_voxBaseVerts = BlockMesh();
@@ -281,30 +282,13 @@ void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 positi
 			RenderUtil::uploadMesh(&_referenceCubeMesh->vboID, &_referenceCubeMesh->iboID, &_voxVerts.verts[0], 24, _referenceCubeIndices, 36);
 		}
 		else{
-			_brushVerts.resize(0);
-			for (int i = 0; i < brushCoords.size(); i++){
-				BlockVertex tv;
-				for (int j = 0; j < 24; j++){
-					tv = _voxBaseVerts.verts[j];
-					/*tv.position.x = brushCoords[i].x;
-					tv.position.y = brushCoords[i].y;
-					tv.position.z = brushCoords[i].z;*/
-					tv.position.x += position.x + brushCoords[i].x;
-					tv.position.y += position.y + brushCoords[i].y;
-					tv.position.z += position.z + brushCoords[i].z;
-					_brushVerts.push_back(tv);
-				}
+			glm::vec3 diff(position.x-_lastPosition.x, position.y-_lastPosition.y, position.z-_lastPosition.z);
+			for (int i = 0; i < _brushVerts.size(); i++){
+				_brushVerts[i].position.x += diff.x;
+				_brushVerts[i].position.y += diff.y;
+				_brushVerts[i].position.z += diff.z;
 			}
-			indices = new GLuint[36 * brushCoords.size()];
-			for (int i = 0, j = 0; i < 36 * brushCoords.size(); i += 6, j += 4){
-				indices[i] = j;
-				indices[i + 1] = j + 1;
-				indices[i + 2] = j + 2;
-				indices[i + 3] = j + 2;
-				indices[i + 4] = j + 3;
-				indices[i + 5] = j;
-			}
-			RenderUtil::uploadMesh(&_referenceCubeMesh->vboID, &_referenceCubeMesh->iboID, &_brushVerts[0], _brushVerts.size(), indices, 36 * brushCoords.size());
+			RenderUtil::uploadMesh(&_referenceCubeMesh->vboID, &_referenceCubeMesh->iboID, &_brushVerts[0], _brushVerts.size(), _brushIndices, (_brushVerts.size() / 4) * 6);
 		}
 		_lastPosition = position;
 	}
@@ -339,4 +323,153 @@ void RenderUtil::changeReferenceColor(glm::vec4 color){
 		_voxBaseVerts.verts[i].color[2] = color.b;
 		_voxBaseVerts.verts[i].color[3] = color.a;
 	}
+}
+
+void RenderUtil::meshBrush(vector <bool> brushCoords, int width, int height, int length){
+	_brushVerts.clear();
+	BlockVertex tv;
+
+	printf("creating brush mesh\n");
+	for (int z = 0; z < length; z++){
+		for (int y = 0; y < height; y++){
+			for (int x = 0; x < width; x++){
+				if (brushCoords[z*width*height + y*width + x] == 1){
+					if (z < length - 1){
+						if (brushCoords[(z + 1)*width*height + y*width + x] == 0){
+							for (int i = 0; i < 4; i++){
+								tv = _voxBaseVerts.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								_brushVerts.push_back(tv);
+							}
+						}
+					}
+					else{
+						for (int i = 0; i < 4; i++){
+							tv = _voxBaseVerts.verts[i];
+							tv.position.x += x;
+							tv.position.y += y;
+							tv.position.z += z;
+							_brushVerts.push_back(tv);
+						}
+					}
+					if (x < width - 1){
+						if (brushCoords[z*width*height + y*width + x + 1] == 0){
+							for (int i = 4; i < 8; i++){
+								tv = _voxBaseVerts.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								_brushVerts.push_back(tv);
+							}
+						}
+					}
+					else{
+						for (int i = 4; i < 8; i++){
+							tv = _voxBaseVerts.verts[i];
+							tv.position.x += x;
+							tv.position.y += y;
+							tv.position.z += z;
+							_brushVerts.push_back(tv);
+						}
+					}
+					if (y < height - 1){
+						if (brushCoords[z*width*height + (y + 1)*width + x] == 0){
+							for (int i = 8; i < 12; i++){
+								tv = _voxBaseVerts.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								_brushVerts.push_back(tv);
+							}
+						}
+					}
+					else{
+						for (int i = 8; i < 12; i++){
+							tv = _voxBaseVerts.verts[i];
+							tv.position.x += x;
+							tv.position.y += y;
+							tv.position.z += z;
+							_brushVerts.push_back(tv);
+						}
+					}
+					if (x > 0){
+						if (brushCoords[z*width*height + y*width + x - 1] == 0){
+							for (int i = 12; i < 16; i++){
+								tv = _voxBaseVerts.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								_brushVerts.push_back(tv);
+							}
+						}
+					}
+					else{
+						for (int i = 12; i < 16; i++){
+							tv = _voxBaseVerts.verts[i];
+							tv.position.x += x;
+							tv.position.y += y;
+							tv.position.z += z;
+							_brushVerts.push_back(tv);
+						}
+					}
+					if (y > 0){
+						if (brushCoords[z*width*height + (y - 1)*width + x] == 0){
+							for (int i = 16; i < 20; i++){
+								tv = _voxBaseVerts.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								_brushVerts.push_back(tv);
+							}
+						}
+					}
+					else{
+						for (int i = 16; i < 20; i++){
+							tv = _voxBaseVerts.verts[i];
+							tv.position.x += x;
+							tv.position.y += y;
+							tv.position.z += z;
+							_brushVerts.push_back(tv);
+						}
+					}
+					if (z > 0){
+						if (brushCoords[(z - 1)*width*height + y*width + x] == 0){
+							for (int i = 20; i < 24; i++){
+								tv = _voxBaseVerts.verts[i];
+								tv.position.x += x;
+								tv.position.y += y;
+								tv.position.z += z;
+								_brushVerts.push_back(tv);
+							}
+						}
+					}
+					else{
+						for (int i = 20; i < 24; i++){
+							tv = _voxBaseVerts.verts[i];
+							tv.position.x += x;
+							tv.position.y += y;
+							tv.position.z += z;
+							_brushVerts.push_back(tv);
+						}
+					}
+				}
+				else{
+					cout << "No match\n";
+				}
+			}
+		}
+	}
+	
+	_brushIndices = new GLuint[(_brushVerts.size() / 4) * 6];
+	for (int i = 0, j = 0; i < (_brushVerts.size() / 4) * 6; i += 6, j += 4){
+		_brushIndices[i] = j;
+		_brushIndices[i + 1] = j + 1;
+		_brushIndices[i + 2] = j + 2;
+		_brushIndices[i + 3] = j + 2;
+		_brushIndices[i + 4] = j + 3;
+		_brushIndices[i + 5] = j;
+	}
+	_lastPosition = glm::vec3(0, 0, 0);
 }

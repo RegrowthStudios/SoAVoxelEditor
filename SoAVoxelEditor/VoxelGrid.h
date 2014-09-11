@@ -16,7 +16,7 @@ public:
 
     void drawVoxels(Camera *camera);
     void drawGrid(Camera *camera);
-	void remesh();
+	void remesh(vector <int> chunks);
 
     //getters
     int getWidth() const { return _width; }
@@ -29,4 +29,3 @@ private:
     int _height, _width, _length, _layerSize, _size, _voxelCount;
     Voxel* _voxels;
 };
-

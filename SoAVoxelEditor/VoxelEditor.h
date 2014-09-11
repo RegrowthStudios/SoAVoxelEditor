@@ -66,7 +66,8 @@ private:
 	glm::vec3 _clickStart, _clickDirection;
 	VoxelGrid *_voxelGrid;
     Voxel *_currentVoxel;
-	int _width, _height;
+	int _width, _height, _length;
+	int _cWidth, _cHeight, _cLength;
     char _state;
     vector < vector <Command*> > _commandStack, _fluxStack;
     bool _selectedFirstBlock;
