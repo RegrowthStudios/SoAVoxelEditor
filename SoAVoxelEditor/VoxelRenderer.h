@@ -12,13 +12,11 @@ public:
     static void initialize(int w, int h, int l);
     static void drawVoxels(class Camera* camera);
 	static void drawChunks(class Camera* camera);
-    static void addVoxel(int x, int y, int z, const GLubyte* color);
-    static void removeVoxel(int x, int y, int z);
     static void selectVoxel(int x, int y, int z, bool selected);
 	static void remesh(Voxel *voxels, int width, int height, int length, vector<int> chunks);
 
 private:
-	static int cWidth, cHeight, cLength;
+	static int _cWidth, _cHeight;
     static bool _changed;
     static vector <BlockVertex> _currentVerts;
     static GLuint *_currentIndices;

@@ -13,9 +13,13 @@
 
 using namespace std;
 
-
 extern glm::vec3 debugP1, debugP2;
 extern bool drawDebugLine;
+
+//coordinate system
+//x left to right
+//y top to bottom
+//z front to back
 
 //this is for input
 //I encase a boolean in a struct so that the key is guarenteed to be initialized to false

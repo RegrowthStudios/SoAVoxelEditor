@@ -89,6 +89,8 @@ void VoxelEditor::update() {
 }
 
 void VoxelEditor::addVoxel(int x, int y, int z) {
+	vector <int> chunk;
+
 	if (_voxelGrid->addVoxel(*_currentVoxel, x, y, z)){
         vector <Command*> tempComList;
         Command* c = new Command;
@@ -96,12 +98,15 @@ void VoxelEditor::addVoxel(int x, int y, int z) {
 		c->coord.x = x;
 		c->coord.y = y;
 		c->coord.z = z;
+		chunk.push_back((z / 32)*_cWidth*_cHeight + (y / 32)*_cHeight + (x / 32));
 
 		c->v = new Voxel;
 		*c->v = *_currentVoxel;
 
 		tempComList.push_back(c);
 		newCommand(tempComList);
+
+		_voxelGrid->remesh(chunk);
 	}
 }
 
@@ -128,7 +133,10 @@ void VoxelEditor::removeVoxel(int x, int y, int z) {
 }
 
 void VoxelEditor::fillRange(int x1, int y1, int z1, int x2, int y2, int z2) {
-    vector <Command*> tempComList;
+	vector <int> chunks;
+	bool chunkCheck = 0;
+
+	vector <Command*> tempComList;
     int startX = x1 < x2 ? x1 : x2;
     int startY = y1 < y2 ? y1 : y2;
     int startZ = z1 < z2 ? z1 : z2;
@@ -148,10 +156,21 @@ void VoxelEditor::fillRange(int x1, int y1, int z1, int x2, int y2, int z2) {
 					c->v = new Voxel();
                     *c->v = *_currentVoxel;
                     tempComList.push_back(c);
+					for (int l = 0; l < chunks.size(); l++){
+						if (chunks[l] == (k / 32)*_cWidth * _cHeight + (j / 32)*_cWidth + (i / 32)){
+							chunkCheck = 1;
+							break;
+						}
+					}
+					if (!chunkCheck){
+						chunks.push_back((k / 32)*_cWidth * _cHeight + (j / 32)*_cWidth + (i / 32));
+					}
+					chunkCheck = 0;
                 }
             }
         }
     }
+	_voxelGrid->remesh(chunks);
     if(tempComList.size() > 0) {
         newCommand(tempComList);
     }
@@ -186,13 +205,13 @@ void VoxelEditor::removeRange(int x1, int y1, int z1, int x2, int y2, int z2) {
                     c->coord.y = j;
                     c->coord.z = k;
 					for (int l = 0; l < chunks.size(); l++){
-						if (chunks[l] == (i / 32)*_cWidth * _cHeight + (j / 32)*_cWidth + (k / 32)){
+						if (chunks[l] == (k / 32)*_cWidth * _cHeight + (j / 32)*_cWidth + (i / 32)){
 							chunkCheck = 1;
 							break;
 						}
 					}
 					if (!chunkCheck)
-						chunks.push_back((i / 32)*_cWidth * _cHeight + (j / 32)*_cWidth + (k / 32));
+						chunks.push_back((k / 32)*_cWidth * _cHeight + (j / 32)*_cWidth + (i / 32));
 					chunkCheck = 0;
 					c->v = new Voxel;
 					*c->v = tv;
@@ -336,9 +355,18 @@ void VoxelEditor::findIntersect(const glm::vec3 &startPosition, const glm::vec3 
 	float i = 0.1f;
     glm::vec3 base = direction, tempV;
     Voxel *tempVox;
+	int xs, ys, zs, maxStep;
 
 	_clickStart = startPosition;
 	_clickDirection = direction;
+	if (_clickStart.x > _width && _clickDirection.x > 0.0 || _clickStart.y > _height && _clickDirection.y > 0.0 || _clickStart.z > _length && _clickDirection.z > 0.0){
+		_currentIntersect = direction + startPosition;
+		return;
+	}
+	if (_clickStart.x < 0.0 && _clickDirection.x < 0.0 || _clickStart.y < 0.0 && _clickDirection.y < 0.0 || _clickStart.z < 0.0 && _clickDirection.z < 0.0){
+		
+	}
+
 
     drawDebugLine = false;
     debugP1 = startPosition;
@@ -410,6 +438,9 @@ void VoxelEditor::makeBrush(int x1, int y1, int z1, int x2, int y2, int z2){
 }
 
 void VoxelEditor::drawBrush(){
+	vector <int> chunks;
+	bool chunkCheck = 0;
+
 	_currentIntersect -= _step * _clickDirection;
 	for (int i = 0; i < _brushVoxelCoords.size(); i++){
 		if ((int)_currentIntersect.x + _brushVoxelCoords[i].x >= _voxelGrid->getWidth())
@@ -435,9 +466,20 @@ void VoxelEditor::drawBrush(){
 		c->coord.z = _brushVoxelCoords[i].z + (int)_currentIntersect.z;
 		c->v = new Voxel;
 		*c->v = _brushVoxels[i];
+		for (int j = 0; j < chunks.size(); j++){
+			if (chunks[j] == ((int)c->coord.z / 32)*_cWidth * _cHeight + ((int)c->coord.y / 32)*_cWidth + ((int)c->coord.x / 32)){
+				chunkCheck = 1;
+				break;
+			}
+		}
+		if (!chunkCheck){
+			chunks.push_back(((int)c->coord.z / 32)*_cWidth * _cHeight + ((int)c->coord.y / 32)*_cWidth + ((int)c->coord.x / 32));
+		}
+		chunkCheck = 0;
 		tempComList.push_back(c);
 	}
 
+	_voxelGrid->remesh(chunks);
 	if (tempComList.size() > 0) newCommand(tempComList);
 }
 
@@ -453,7 +495,7 @@ void VoxelEditor::newCommand(vector <Command*> lCom) {
 }
 
 void VoxelEditor::execute(vector <Command*> lCom) {
-	bool rCheck = 0, chunkCheck = 0;
+	bool chunkCheck = 0;
 	vector <int> chunks;
 
 	for (int i = 0; i < lCom.size(); i++){
@@ -461,7 +503,6 @@ void VoxelEditor::execute(vector <Command*> lCom) {
 		{
 		case 'i':
 			_voxelGrid->removeVoxel(lCom[i]->coord.x, lCom[i]->coord.y, lCom[i]->coord.z);
-			rCheck = 1;
 			for (int j = 0; j < chunks.size(); j++){
 				if ((int)chunks[j] == (((int)lCom[i]->coord.z / 32) * _cWidth * _cHeight + ((int)lCom[i]->coord.y / 32) * _cWidth + ((int)lCom[i]->coord.x / 32))){
 					chunkCheck = 1;
@@ -477,12 +518,21 @@ void VoxelEditor::execute(vector <Command*> lCom) {
 			break;
 		case 'r':
 			_voxelGrid->addVoxel(*lCom[i]->v, lCom[i]->coord.x, lCom[i]->coord.y, lCom[i]->coord.z);
+			for (int j = 0; j < chunks.size(); j++){
+				if ((int)chunks[j] == (((int)lCom[i]->coord.z / 32) * _cWidth * _cHeight + ((int)lCom[i]->coord.y / 32) * _cWidth + ((int)lCom[i]->coord.x / 32))){
+					chunkCheck = 1;
+				}
+			}
+			if (chunkCheck == 0){
+				//printf("Adding chunk %d for remeshing\n", (int)(lCom[i]->coord.z / 32) * _cWidth * _cHeight + (lCom[i]->coord.y / 32) * _cWidth + (lCom[i]->coord.x / 32));
+				chunks.push_back(((int)lCom[i]->coord.z / 32) * _cWidth * _cHeight + ((int)lCom[i]->coord.y / 32) * _cWidth + ((int)lCom[i]->coord.x / 32));
+			}
+			chunkCheck = 0;
 			break;
 		}
 	}
 	//cout << "done\n";
-	if (rCheck)
-		_voxelGrid->remesh(chunks);
+	_voxelGrid->remesh(chunks);
 }
 
 void VoxelEditor::undo(){

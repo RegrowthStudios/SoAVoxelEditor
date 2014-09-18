@@ -83,7 +83,7 @@ void initialize()
 
 	loadOptions("Data/options.ini");
 
-	std::cout << "Please input a size for your model" << std::endl;
+	/*std::cout << "Please input a size for your model" << std::endl;
 	int width;
 	int height;
 	int length;
@@ -93,9 +93,9 @@ void initialize()
 	std::cin >> input;
 	height = std::stoi(input);
 	std::cin >> input;
-	length = std::stoi(input);
-    voxelEditor.initialize(width, height, length);
-	//voxelEditor.initialize(100, 100, 100);
+	length = std::stoi(input);*/
+    //voxelEditor.initialize(width, height, length);
+	voxelEditor.initialize(100, 100, 100);
 
 	initializeShaders();
 	
