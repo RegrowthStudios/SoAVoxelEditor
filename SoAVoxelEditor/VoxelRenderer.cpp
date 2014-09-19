@@ -18,9 +18,8 @@ vector <vector<BlockVertex>> VoxelRenderer::_chunkVerts;
 GLuint *VoxelRenderer::_chunkIndices;
 vector<Mesh> VoxelRenderer::_chunkMeshs;
 vector<bool> VoxelRenderer::_chunkChanged;
-int VoxelRenderer::cWidth;
-int VoxelRenderer::cHeight;
-int VoxelRenderer::cLength;
+int VoxelRenderer::_cWidth;
+int VoxelRenderer::_cHeight;
 
 void VoxelRenderer::initialize(int w, int h, int l) {
     _changed = true;
@@ -40,9 +39,8 @@ void VoxelRenderer::initialize(int w, int h, int l) {
 	zc = l / 32;
 	if (h % 32 != 0)
 		zc++;
-	cWidth = xc;
-	cHeight = yc;
-	cLength = zc;
+	_cWidth = xc;
+	_cHeight = yc;
 	_chunkIndices = new GLuint[32 * 32 * 32 * 36];
 	_chunkMeshs.resize(xc * yc * zc);
 	_chunkChanged.resize(xc * yc * zc, 0);
@@ -188,45 +186,6 @@ void VoxelRenderer::drawChunks(Camera *camera) {
 	}
 }
 
-void VoxelRenderer::addVoxel(int x, int y, int z, const GLubyte* color) {
-    BlockVertex tv;
-
-	int cx, cy, cz;
-	cx = x / 32;
-	cy = y / 32;
-	cz = z / 32;
-
-    for (int i = 0; i < 24; i++){
-        tv = _baseMesh.verts[i];
-        tv.position.x += x;
-        tv.position.y += y;
-        tv.position.z += z;
-        for(int j = 0; j < 4; j++)
-            tv.color[j] = color[j];
-
-		_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
-        //_currentVerts.push_back(tv);
-    }
-	_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
-	//_changed = true;
-}
-
-void VoxelRenderer::removeVoxel(int x, int y, int z) {
-    for (int i = 0; i < _currentVerts.size(); i += 24){
-        if (_currentVerts[i].position.x - _baseMesh.verts[0].position.x == x && _currentVerts[i].position.y - _baseMesh.verts[0].position.y == y && _currentVerts[i].position.z - _baseMesh.verts[0].position.z == z){
-
-            for (int j = 0; j < 24; j++){
-                _currentVerts[i + j] = _currentVerts[_currentVerts.size() - 24 + j];
-            }
-            for (int j = 0; j < 24; j++){
-                _currentVerts.pop_back();
-            }
-            break;
-        }
-    }
-    _changed = true;
-}
-
 void VoxelRenderer::selectVoxel(int x, int y, int z, bool selected) {
     for (int i = 0; i < _currentVerts.size(); i++){
         if ((int)_currentVerts[i].position.x - _baseMesh.verts[i % 24].position.x == x && (int)_currentVerts[i].position.y - _baseMesh.verts[i % 24].position.y == y && (int)_currentVerts[i].position.z - _baseMesh.verts[i % 24].position.z == z){
@@ -246,22 +205,23 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 	BlockVertex tv;
 	Voxel currentVox;
 
-	/*int cWidth, cHeight;
-	cWidth = width / 32;
+	/*int _cWidth, _cHeight;
+	_cWidth = width / 32;
 	if (width % 32 != 0)
-		cWidth++;
-	cHeight = height / 32;
+		_cWidth++;
+	_cHeight = height / 32;
 	if (height % 32 != 0)
-		cHeight++;*/
+		_cHeight++;*/
 	
 	int layerSize = width * length;
 	
 	cout << chunks.size() << endl;
 	for (int c = 0; c < chunks.size(); c++){
 		int cx, cy, cz;
-		cz = chunks[c] / (cWidth * cHeight);
-		cy = (chunks[c] % (cWidth * cHeight)) / cWidth;
-		cx = (chunks[c] % (cWidth * cHeight)) % cWidth;
+		cz = chunks[c] / (_cWidth * _cHeight);
+		cy = (chunks[c] % (_cWidth * _cHeight)) / _cWidth;
+		cx = (chunks[c] % (_cWidth * _cHeight)) % _cWidth;
+		printf("Remeshing chunk: %d at <%d,%d,%d>\n", chunks[c], cx, cy, cz);
 		for (int z = cz*32; z < cz*32+32 && z < length; z++){
 			for (int y = cy*32; y < cy*32+32 && y < height; y++){
 				for (int x = cx*32; x < cx*32+32 && x < width; x++){
@@ -276,10 +236,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 									tv.position.z += z;
 									for (int j = 0; j < 4; j++)
 										tv.color[j] = currentVox.color[j];
-									_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+									_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 									//_currentVerts.push_back(tv);
 								}
-								_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+								_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 							}
 						}
 						else{
@@ -290,10 +250,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 								tv.position.z += z;
 								for (int j = 0; j < 4; j++)
 									tv.color[j] = currentVox.color[j];
-								_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+								_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 								//_currentVerts.push_back(tv);
 							}
-							_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+							_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 						}
 						if (x < width - 1){//right face
 							if (voxels[z*layerSize + y*width + x + 1].type == '\0' || voxels[z*layerSize + y*width + x + 1].type == '\0'){
@@ -304,10 +264,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 									tv.position.z += z;
 									for (int j = 0; j < 4; j++)
 										tv.color[j] = currentVox.color[j];
-									_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+									_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 									//_currentVerts.push_back(tv);
 								}
-								_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+								_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 							}
 						}
 						else{
@@ -318,10 +278,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 								tv.position.z += z;
 								for (int j = 0; j < 4; j++)
 									tv.color[j] = currentVox.color[j];
-								_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+								_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 								//_currentVerts.push_back(tv);
 							}
-							_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+							_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 						}
 						if (y < width - 1){//top face
 							if (voxels[z*layerSize + (y + 1)*width + x].type == '\0' || voxels[z*layerSize + (y + 1)*width + x].type == 0){
@@ -332,10 +292,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 									tv.position.z += z;
 									for (int j = 0; j < 4; j++)
 										tv.color[j] = currentVox.color[j];
-									_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+									_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 									//_currentVerts.push_back(tv);
 								}
-								_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+								_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 							}
 						}
 						else{
@@ -346,10 +306,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 								tv.position.z += z;
 								for (int j = 0; j < 4; j++)
 									tv.color[j] = currentVox.color[j];
-								_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+								_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 								//_currentVerts.push_back(tv);
 							}
-							_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+							_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 						}
 						if (x > 0){//left face
 							if (voxels[z*layerSize + y*width + x - 1].type == '\0' || voxels[z*layerSize + y*width + x - 1].type == 0){
@@ -360,10 +320,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 									tv.position.z += z;
 									for (int j = 0; j < 4; j++)
 										tv.color[j] = currentVox.color[j];
-									_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+									_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 									//_currentVerts.push_back(tv);
 								}
-								_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+								_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 							}
 						}
 						else{
@@ -374,10 +334,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 								tv.position.z += z;
 								for (int j = 0; j < 4; j++)
 									tv.color[j] = currentVox.color[j];
-								_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+								_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 								//_currentVerts.push_back(tv);
 							}
-							_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+							_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 						}
 						if (y > 0){//bottom face
 							if (voxels[z*layerSize + (y - 1)*width + x].type == '\0' || voxels[z*layerSize + (y - 1)*width + x].type == 0){
@@ -388,10 +348,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 									tv.position.z += z;
 									for (int j = 0; j < 4; j++)
 										tv.color[j] = currentVox.color[j];
-									_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+									_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 									//_currentVerts.push_back(tv);
 								}
-								_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+								_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 							}
 						}
 						else{
@@ -402,10 +362,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 								tv.position.z += z;
 								for (int j = 0; j < 4; j++)
 									tv.color[j] = currentVox.color[j];
-								_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+								_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 								//_currentVerts.push_back(tv);
 							}
-							_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+							_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 						}
 						if (z > 0){//back face
 							if (voxels[(z - 1)*layerSize + y*width + x].type == '\0' || voxels[(z - 1)*layerSize + y*width + x].type == 0){
@@ -416,10 +376,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 									tv.position.z += z;
 									for (int j = 0; j < 4; j++)
 										tv.color[j] = currentVox.color[j];
-									_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+									_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 									//_currentVerts.push_back(tv);
 								}
-								_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+								_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 							}
 						}
 						else{
@@ -430,10 +390,10 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 								tv.position.z += z;
 								for (int j = 0; j < 4; j++)
 									tv.color[j] = currentVox.color[j];
-								_chunkVerts[cz*cWidth*cHeight + cy*cWidth + cx].push_back(tv);
+								_chunkVerts[cz*_cWidth*_cHeight + cy*_cWidth + cx].push_back(tv);
 								//_currentVerts.push_back(tv);
 							}
-							_chunkChanged[cz*cWidth*cHeight + cy*cWidth + cx] = true;
+							_chunkChanged[cz*_cWidth*_cHeight + cy*_cWidth + cx] = true;
 						}
 					}
 				}

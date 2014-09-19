@@ -62,7 +62,7 @@ public:
 	void drawBrush();
 
 private:
-	const float _step = 0.1f, _maxStep = 50.0f;
+	const float _step = 0.1f, _maxStep = 100.0f;
 	glm::vec3 _clickStart, _clickDirection;
 	VoxelGrid *_voxelGrid;
     Voxel *_currentVoxel;

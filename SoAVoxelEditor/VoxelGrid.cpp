@@ -39,7 +39,6 @@ bool VoxelGrid::addVoxel(const Voxel& newV, int x, int y, int z){
         tempV->type = newV.type;
         for(int i = 0; i < 4; i++)
             tempV->color[i] = newV.color[i];
-        VoxelRenderer::addVoxel(x, y, z, newV.color);
 		return 1;
     } else{
         //std::printf("Voxel space <%d,%d,%d> is occupied.\n", x, y, z);
@@ -57,8 +56,6 @@ bool VoxelGrid::removeVoxel(int x, int y, int z){
     } else {
         _voxelCount--;
         tempV->type = '\0';
-        
-		//VoxelRenderer::removeVoxel(x, y, z);
     }
 	return 1;
 }
