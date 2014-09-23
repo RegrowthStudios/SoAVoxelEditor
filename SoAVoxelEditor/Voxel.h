@@ -1,6 +1,7 @@
 #pragma once
 #include <GL\glew.h>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -14,4 +15,9 @@ struct VoxelType {
 struct Voxel {
     unsigned short type;
 	GLubyte color[4];
+};
+
+struct Brush{
+	int height, width, length;
+	vector <Voxel> voxels;
 };

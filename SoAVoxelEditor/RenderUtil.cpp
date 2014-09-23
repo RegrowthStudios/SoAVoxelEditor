@@ -3,6 +3,7 @@
 #include "Shader.h"
 #include "GlobalStructs.h"
 #include "Errors.h"
+#include "Voxel.h"
 
 Mesh* RenderUtil::_mesh = nullptr;
 Mesh* RenderUtil::_referenceCubeMesh = nullptr;
@@ -86,7 +87,7 @@ void RenderUtil::drawLine(Camera *camera, glm::vec3 p1, glm::vec3 p2, GLubyte r,
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0); //vertexPosition
     glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GridVertex), (void *)12); //vertexColor
 
-    glLineWidth(thickness);
+    glLineWidth((GLfloat)thickness);
 
     //when drawing lines theres no bonus for using indices so we just use draw arrays
     //so we unbind the element array buffer for good measure
@@ -246,7 +247,7 @@ void RenderUtil::initializeReferenceVoxel(){
 	_lastPosition = glm::vec3(-1, -1, -1);
 }
 
-void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 position, vector <glm::vec3> &brushCoords){
+void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 position, Brush *brush){
 	if (!_referenceCubeMesh) initializeReferenceVoxel();
 
 	blockShader.bind();
@@ -271,7 +272,7 @@ void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 positi
 	GLuint *indices;
 
 	if ((int)position.x != (int)_lastPosition.x || (int)position.y != (int)_lastPosition.y || (int)position.z != (int)_lastPosition.z){
-		if (brushCoords.size() < 1){
+		if (brush == NULL){
 			indices = new GLuint[36];
 			for (int i = 0; i < 24; i++){
 				_voxVerts.verts[i] = _voxBaseVerts.verts[i];
@@ -283,7 +284,7 @@ void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 positi
 		}
 		else{
 			glm::vec3 diff(position.x-_lastPosition.x, position.y-_lastPosition.y, position.z-_lastPosition.z);
-			for (int i = 0; i < _brushVerts.size(); i++){
+			for (int i = 0; i < (int)_brushVerts.size(); i++){
 				_brushVerts[i].position.x += diff.x;
 				_brushVerts[i].position.y += diff.y;
 				_brushVerts[i].position.z += diff.z;
@@ -305,7 +306,7 @@ void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 positi
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(BlockVertex), (void *)16); //vertexNormal
 
 	//Finally, draw our data. The last parameter is the offset into the bound buffer
-	if (brushCoords.size() > 0){
+	if (brush != NULL){
 		glDrawElements(GL_TRIANGLES, (6 * _brushVerts.size()) / 4, GL_UNSIGNED_INT, NULL);
 		//glDrawElements(GL_TRIANGLES, 36 * brushCoords.size(), GL_UNSIGNED_INT, NULL);
 	}
@@ -318,152 +319,86 @@ void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 positi
 
 void RenderUtil::changeReferenceColor(glm::vec4 color){
 	for (int i = 0; i < 24; i++){
-		_voxBaseVerts.verts[i].color[0] = color.r;
-		_voxBaseVerts.verts[i].color[1] = color.g;
-		_voxBaseVerts.verts[i].color[2] = color.b;
-		_voxBaseVerts.verts[i].color[3] = color.a;
+		_voxBaseVerts.verts[i].color[0] = (GLubyte)color.r;
+		_voxBaseVerts.verts[i].color[1] = (GLubyte)color.g;
+		_voxBaseVerts.verts[i].color[2] = (GLubyte)color.b;
+		_voxBaseVerts.verts[i].color[3] = (GLubyte)color.a;
 	}
 }
 
-void RenderUtil::meshBrush(vector <bool> brushCoords, int width, int height, int length){
+inline void RenderUtil::addFace(int start, int end, glm::vec3 pos){
+	BlockVertex tv;
+	for (int i = start; i < end; i++){
+		tv = _voxBaseVerts.verts[i];
+		tv.position += pos;
+		_brushVerts.push_back(tv);
+	}
+}
+
+void RenderUtil::meshBrush(Brush *brush){
 	_brushVerts.clear();
 	BlockVertex tv;
 
 	printf("creating brush mesh\n");
-	for (int z = 0; z < length; z++){
-		for (int y = 0; y < height; y++){
-			for (int x = 0; x < width; x++){
-				if (brushCoords[z*width*height + y*width + x] == 1){
-					if (z < length - 1){
-						if (brushCoords[(z + 1)*width*height + y*width + x] == 0){
-							for (int i = 0; i < 4; i++){
-								tv = _voxBaseVerts.verts[i];
-								tv.position.x += x;
-								tv.position.y += y;
-								tv.position.z += z;
-								_brushVerts.push_back(tv);
-							}
+	for (int z = 0; z < brush->length; z++){
+		for (int y = 0; y < brush->height; y++){
+			for (int x = 0; x < brush->width; x++){
+				if (brush->voxels[z*brush->width*brush->height + y*brush->width + x].type != '\0'){
+					if (z < brush->length - 1){
+						if (brush->voxels[(z + 1)*brush->width*brush->height + y*brush->width + x].type == '\0'){
+							addFace(0, 4, glm::vec3(x, y, z));
 						}
 					}
 					else{
-						for (int i = 0; i < 4; i++){
-							tv = _voxBaseVerts.verts[i];
-							tv.position.x += x;
-							tv.position.y += y;
-							tv.position.z += z;
-							_brushVerts.push_back(tv);
-						}
+						addFace(0, 4, glm::vec3(x, y, z));
 					}
-					if (x < width - 1){
-						if (brushCoords[z*width*height + y*width + x + 1] == 0){
-							for (int i = 4; i < 8; i++){
-								tv = _voxBaseVerts.verts[i];
-								tv.position.x += x;
-								tv.position.y += y;
-								tv.position.z += z;
-								_brushVerts.push_back(tv);
-							}
+					if (x < brush->width - 1){
+						if (brush->voxels[z*brush->width*brush->height + y*brush->width + x + 1].type == '\0'){
+							addFace(4, 8, glm::vec3(x, y, z));
 						}
 					}
 					else{
-						for (int i = 4; i < 8; i++){
-							tv = _voxBaseVerts.verts[i];
-							tv.position.x += x;
-							tv.position.y += y;
-							tv.position.z += z;
-							_brushVerts.push_back(tv);
-						}
+						addFace(4, 8, glm::vec3(x, y, z));
 					}
-					if (y < height - 1){
-						if (brushCoords[z*width*height + (y + 1)*width + x] == 0){
-							for (int i = 8; i < 12; i++){
-								tv = _voxBaseVerts.verts[i];
-								tv.position.x += x;
-								tv.position.y += y;
-								tv.position.z += z;
-								_brushVerts.push_back(tv);
-							}
+					if (y < brush->height - 1){
+						if (brush->voxels[z*brush->width*brush->height + (y + 1)*brush->width + x].type == '\0'){
+							addFace(8, 12, glm::vec3(x, y, z));
 						}
 					}
 					else{
-						for (int i = 8; i < 12; i++){
-							tv = _voxBaseVerts.verts[i];
-							tv.position.x += x;
-							tv.position.y += y;
-							tv.position.z += z;
-							_brushVerts.push_back(tv);
-						}
+						addFace(8, 12, glm::vec3(x, y, z));
 					}
 					if (x > 0){
-						if (brushCoords[z*width*height + y*width + x - 1] == 0){
-							for (int i = 12; i < 16; i++){
-								tv = _voxBaseVerts.verts[i];
-								tv.position.x += x;
-								tv.position.y += y;
-								tv.position.z += z;
-								_brushVerts.push_back(tv);
-							}
+						if (brush->voxels[z*brush->width*brush->height + y*brush->width + x - 1].type == '\0'){
+							addFace(12, 16, glm::vec3(x, y, z));
 						}
 					}
 					else{
-						for (int i = 12; i < 16; i++){
-							tv = _voxBaseVerts.verts[i];
-							tv.position.x += x;
-							tv.position.y += y;
-							tv.position.z += z;
-							_brushVerts.push_back(tv);
-						}
+						addFace(12, 16, glm::vec3(x, y, z));
 					}
 					if (y > 0){
-						if (brushCoords[z*width*height + (y - 1)*width + x] == 0){
-							for (int i = 16; i < 20; i++){
-								tv = _voxBaseVerts.verts[i];
-								tv.position.x += x;
-								tv.position.y += y;
-								tv.position.z += z;
-								_brushVerts.push_back(tv);
-							}
+						if (brush->voxels[z*brush->width*brush->height + (y - 1)*brush->width + x].type == '\0'){
+							addFace(16, 20, glm::vec3(x, y, z));
 						}
 					}
 					else{
-						for (int i = 16; i < 20; i++){
-							tv = _voxBaseVerts.verts[i];
-							tv.position.x += x;
-							tv.position.y += y;
-							tv.position.z += z;
-							_brushVerts.push_back(tv);
-						}
+						addFace(16, 20, glm::vec3(x, y, z));
 					}
 					if (z > 0){
-						if (brushCoords[(z - 1)*width*height + y*width + x] == 0){
-							for (int i = 20; i < 24; i++){
-								tv = _voxBaseVerts.verts[i];
-								tv.position.x += x;
-								tv.position.y += y;
-								tv.position.z += z;
-								_brushVerts.push_back(tv);
-							}
+						if (brush->voxels[(z - 1)*brush->width*brush->height + y*brush->width + x].type == '\0'){
+							addFace(20, 24, glm::vec3(x, y, z));
 						}
 					}
 					else{
-						for (int i = 20; i < 24; i++){
-							tv = _voxBaseVerts.verts[i];
-							tv.position.x += x;
-							tv.position.y += y;
-							tv.position.z += z;
-							_brushVerts.push_back(tv);
-						}
+						addFace(20, 24, glm::vec3(x, y, z));
 					}
-				}
-				else{
-					cout << "No match\n";
 				}
 			}
 		}
 	}
-	
+
 	_brushIndices = new GLuint[(_brushVerts.size() / 4) * 6];
-	for (int i = 0, j = 0; i < (_brushVerts.size() / 4) * 6; i += 6, j += 4){
+	for (int i = 0, j = 0; i < (int)((_brushVerts.size() / 4) * 6); i += 6, j += 4){
 		_brushIndices[i] = j;
 		_brushIndices[i + 1] = j + 1;
 		_brushIndices[i + 2] = j + 2;

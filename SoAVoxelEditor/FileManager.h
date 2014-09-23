@@ -4,8 +4,8 @@
 //
 // Copyright 2014 Seed Of Andromeda
 //
-#include <vector>
 #include <string>
+#include "GlobalStructs.h"
 
 using namespace std;
 

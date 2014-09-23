@@ -50,7 +50,7 @@ VoxelEditor voxelEditor;
 
 int main(int argc, char **argv)
 {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 	initialize();
 
 	while (gameState == PLAY){
@@ -144,6 +144,7 @@ void initializeSdlOpengl()
 	if (err != GLEW_OK){
 		int in;
 		error("Glew failed to initialize. Your graphics card is probably WAY too old. Or you forgot to extract the .zip. It might be time for an upgrade :)");
+		cin >> in;
 		exit(133);
 	}
 
@@ -165,6 +166,7 @@ void initializeSdlOpengl()
 	if (!GLEW_VERSION_2_1){  // check that the machine supports the 2.1 API.
 		int in;
 		error("Machine does not support 2.1 GLEW API.");
+		cin >> in;
 		exit(134);
 	}
 
@@ -233,7 +235,7 @@ void control() {
 			MouseButtons[evnt.button.button] = false;
 			break;
 		case SDL_MOUSEWHEEL:
-			mainCamera->mouseZoom(evnt.wheel.y);
+			mainCamera->mouseZoom((float)evnt.wheel.y);
 			break;
 		case SDL_KEYDOWN:
 			Keys[evnt.key.keysym.sym].pr = true;

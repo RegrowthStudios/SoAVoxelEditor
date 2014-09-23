@@ -12,6 +12,7 @@
 using namespace std;
 
 struct Voxel;
+struct Brush;
 
 struct Command{
 	char type;
@@ -75,7 +76,5 @@ private:
     bool _selectedSecondBlock;
     int _selectedX2, _selectedY2, _selectedZ2;
 	glm::vec3 _currentIntersect, _currentMarker;
-	vector <Voxel> _brushVoxels;
-	vector <glm::vec3> _brushVoxelCoords;
+	Brush *_currentBrush;
 };
-

@@ -110,11 +110,11 @@ int FileManager::saveIniFile(string filePath, vector <vector <IniValue> > &iniVa
 		return 1;
 	}
 
-	for (int i = 0; i < iniSections.size(); i++)
+	for (int i = 0; i < (int)iniSections.size(); i++)
 	{
 		if (iniSections[i].size()){ file << "[" + iniSections[i] + "]\n"; }
 
-		for (int j = 0; j < iniValues[i].size(); j++){
+		for (int j = 0; j < (int)iniValues[i].size(); j++){
 			if (iniValues[i][j].isFloat){
 				file << iniValues[i][j].key << "= " << iniValues[i][j].fval << "\n";
 			}

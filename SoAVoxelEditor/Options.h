@@ -6,6 +6,7 @@
 //
 #include <iostream>
 #include <string>
+#include "GlobalStructs.h"
 
 using namespace std;
 
