@@ -16,7 +16,7 @@
 #include <glm\gtc\matrix_transform.hpp>
 
 //the way I am initializing the position and angles here is stupid. I calculated it by hand and wrote it down.
-Camera::Camera() : _pitchAngle(0), _yawAngle(3*M_PI/2), _direction(-1.0f, 0.0f, 0.0f), _up(0.0f, 1.0f, 0.0f), _right(0.0f, 0.0f, -1.0f), _position(2.0f, 0.0f, 0.5f)
+Camera::Camera() : _pitchAngle(0), _yawAngle(3*(float)M_PI/2), _direction(-1.0f, 0.0f, 0.0f), _up(0.0f, 1.0f, 0.0f), _right(0.0f, 0.0f, -1.0f), _position(2.0f, 0.0f, 0.5f)
 {
 	updateViewMatrix();
 	updateProjectionMatrix();
@@ -57,10 +57,10 @@ void Camera::mouseMove(int relx, int rely)
 
 	//bound angles
 	if (_pitchAngle > M_PI / 2.0f){
-		_pitchAngle = M_PI / 2.0f;
+		_pitchAngle = (float)M_PI / 2.0f;
 	}
 	else if (_pitchAngle < -M_PI / 2.0f){
-		_pitchAngle = -M_PI / 2.0f;
+		_pitchAngle = -(float)M_PI / 2.0f;
 	}
 
 	//wrap angles
@@ -68,7 +68,7 @@ void Camera::mouseMove(int relx, int rely)
 		_yawAngle = 0.0f;
 	}
 	else if (_yawAngle < 0.0f){
-		_yawAngle = 2.0f*M_PI - 0.00001f; //for some reason it gets stuck at zero without the - 0.00001f
+		_yawAngle = 2.0f*(float)M_PI - 0.00001f; //for some reason it gets stuck at zero without the - 0.00001f
 	}
 
 	_direction = glm::vec3(
@@ -107,7 +107,7 @@ void Camera::updateViewMatrix()
 //update the projection matrix only when the fov changes
 void Camera::updateProjectionMatrix()
 {
-	const float znear = 0.01;
+	const float znear = 0.01f;
     const float zfar = 10000.0f;
 	_projectionMatrix = glm::perspective((float)(graphicsOptions.fov), (float)graphicsOptions.screenWidth / (float)graphicsOptions.screenHeight, znear, zfar);
 }

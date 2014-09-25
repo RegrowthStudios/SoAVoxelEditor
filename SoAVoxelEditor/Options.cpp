@@ -49,8 +49,8 @@ int loadOptions(const string fileName)
 
 	int iVal;
 	IniValue *iniVal;
-	for (int i = 0; i < iniSections.size(); i++){
-		for (int j = 0; j < iniValues[i].size(); j++){
+	for (int i = 0; i < (int)iniSections.size(); i++){
+		for (int j = 0; j < (int)iniValues[i].size(); j++){
 			iniVal = &(iniValues[i][j]);
 
 			iVal = fileManager.getIniVal(iniVal->key);

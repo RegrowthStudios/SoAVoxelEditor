@@ -109,13 +109,9 @@ void VoxelGrid::drawGrid(Camera *camera) {
         int alpha = 255;
 
         for (int j = 0; j < _width + 1; j++, i += 2){
-            verts[i].position.x = _width - j;
-            verts[i].position.y = 0;
-            verts[i].position.z = 0;
-
-            verts[i + 1].position.x = _width - j;
-            verts[i + 1].position.y = 0;
-            verts[i + 1].position.z = _length;
+			verts[i].position = glm::vec3(_width - j, 0, 0);
+            
+			verts[i + 1].position = glm::vec3(_width - j, 0, _length);
 
             verts[i].color[0] = 255;
             verts[i].color[1] = 0;
@@ -129,13 +125,9 @@ void VoxelGrid::drawGrid(Camera *camera) {
         }
 
         for (int k = 0; k < _length + 1; k++, i += 2){
-            verts[i].position.x = 0;
-            verts[i].position.y = 0;
-            verts[i].position.z = _length - k;
+			verts[i].position = glm::vec3(0, 0, _length - k);
 
-            verts[i + 1].position.x = _width;
-            verts[i + 1].position.y = 0;
-            verts[i + 1].position.z = _length - k;
+			verts[i + 1].position = glm::vec3(_width, 0, _length - k);
 
             verts[i].color[0] = 255;
             verts[i].color[1] = 0;
@@ -148,13 +140,9 @@ void VoxelGrid::drawGrid(Camera *camera) {
             verts[i + 1].color[3] = alpha;
         }
 
-        verts[i].position.x = 0;
-        verts[i].position.y = 0;
-        verts[i].position.z = 0;
+		verts[i].position = glm::vec3(0, 0, 0);
 
-        verts[i + 1].position.x = 0;
-        verts[i + 1].position.y = _height;
-        verts[i + 1].position.z = 0;
+		verts[i + 1].position = glm::vec3(0, _height, 0);
 
         verts[i].color[0] = 255;
         verts[i].color[1] = 0;
@@ -168,13 +156,9 @@ void VoxelGrid::drawGrid(Camera *camera) {
 
         i += 2;
 
-        verts[i].position.x = _width;
-        verts[i].position.y = 0;
-        verts[i].position.z = 0;
+		verts[i].position = glm::vec3(_width, 0, 0);
 
-        verts[i + 1].position.x = _width;
-        verts[i + 1].position.y = _height;
-        verts[i + 1].position.z = 0;
+		verts[i + 1].position = glm::vec3(_width, _height, 0);
 
         verts[i].color[0] = 255;
         verts[i].color[1] = 0;
@@ -188,13 +172,9 @@ void VoxelGrid::drawGrid(Camera *camera) {
 
         i += 2;
 
-        verts[i].position.x = _width;
-        verts[i].position.y = 0;
-        verts[i].position.z = _length;
+		verts[i].position = glm::vec3(_width, 0, _length);
 
-        verts[i + 1].position.x = _width;
-        verts[i + 1].position.y = _height;
-        verts[i + 1].position.z = _length;
+		verts[i + 1].position = glm::vec3(_width, _height, _length);
 
         verts[i].color[0] = 255;
         verts[i].color[1] = 0;
@@ -207,13 +187,10 @@ void VoxelGrid::drawGrid(Camera *camera) {
         verts[i + 1].color[3] = alpha;
 
         i += 2;
-        verts[i].position.x = 0;
-        verts[i].position.y = 0;
-        verts[i].position.z = _length;
 
-        verts[i + 1].position.x = 0;
-        verts[i + 1].position.y = _height;
-        verts[i + 1].position.z = _length;
+		verts[i].position = glm::vec3(0, 0, _length);
+
+		verts[i + 1].position = glm::vec3(0, _height, _length);
 
         verts[i].color[0] = 255;
         verts[i].color[1] = 0;
@@ -226,13 +203,10 @@ void VoxelGrid::drawGrid(Camera *camera) {
         verts[i + 1].color[3] = alpha;
 
         i += 2;
-        verts[i].position.x = 0;
-        verts[i].position.y = _height;
-        verts[i].position.z = 0;
 
-        verts[i + 1].position.x = _width;
-        verts[i + 1].position.y = _height;
-        verts[i + 1].position.z = 0;
+		verts[i].position = glm::vec3(0, _height, 0);
+
+		verts[i + 1].position = glm::vec3(_width, _height, 0);
 
         verts[i].color[0] = 255;
         verts[i].color[1] = 0;
@@ -245,13 +219,10 @@ void VoxelGrid::drawGrid(Camera *camera) {
         verts[i + 1].color[3] = alpha;
 
         i += 2;
-        verts[i].position.x = _width;
-        verts[i].position.y = _height;
-        verts[i].position.z = 0;
 
-        verts[i + 1].position.x = _width;
-        verts[i + 1].position.y = _height;
-        verts[i + 1].position.z = _length;
+		verts[i].position = glm::vec3(_width,_height,0);
+
+		verts[i+1].position = glm::vec3(_width,_height,_length);
 
         verts[i].color[0] = 255;
         verts[i].color[1] = 0;
@@ -264,13 +235,10 @@ void VoxelGrid::drawGrid(Camera *camera) {
         verts[i + 1].color[3] = alpha;
 
         i += 2;
-        verts[i].position.x = _width;
-        verts[i].position.y = _height;
-        verts[i].position.z = _length;
 
-        verts[i + 1].position.x = 0;
-        verts[i + 1].position.y = _height;
-        verts[i + 1].position.z = _length;
+		verts[i].position = glm::vec3(_width,_height,_length);
+
+		verts[i + 1].position = glm::vec3(0,_height,_length);
 
         verts[i].color[0] = 255;
         verts[i].color[1] = 0;
@@ -283,13 +251,10 @@ void VoxelGrid::drawGrid(Camera *camera) {
         verts[i + 1].color[3] = alpha;
 
         i += 2;
-        verts[i].position.x = 0;
-        verts[i].position.y = _height;
-        verts[i].position.z = _length;
 
-        verts[i + 1].position.x = 0;
-        verts[i + 1].position.y = _height;
-        verts[i + 1].position.z = 0;
+		verts[i].position = glm::vec3(0,_height,_length);
+
+		verts[i + 1].position = glm::vec3(0, _height, 0);
 
         verts[i].color[0] = 255;
         verts[i].color[1] = 0;

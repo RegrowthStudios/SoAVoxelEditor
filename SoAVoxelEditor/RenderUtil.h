@@ -5,11 +5,13 @@
 
 #include "GlobalStructs.h"
 
+struct Voxel;
+struct Brush;
+
 // Static class that provides various helpful rendering utilities
 class RenderUtil
 {
 public:
-
     static bool checkGlError();
     static void drawLine(class Camera *camera, glm::vec3 p1, glm::vec3 p2, GLubyte r, GLubyte g, GLubyte b, int thickness);
     static void uploadMesh(GLuint* vboID, GLuint* iboID, const BlockVertex* blockVertices, const int numVertices, const GLuint* indices, const int numIndices);
@@ -18,9 +20,10 @@ public:
     static void drawWireframeBox(class Camera* camera, const glm::vec3& position, const glm::vec3& size, const glm::vec4& color);
     static void releaseWireframeBox();
 	static void initializeReferenceVoxel();
-	static void drawReferenceVoxel(class Camera* camera, glm::vec3 position, vector <glm::vec3> &brushCoords);
+	static void drawReferenceVoxel(class Camera* camera, glm::vec3 position, Brush *brush);
 	static void changeReferenceColor(glm::vec4 color);
-	static void meshBrush(vector <bool> brushCoords, int width, int height, int length);
+	static void meshBrush(Brush *brush);
+	static inline void addFace(int start, int end, glm::vec3 pos);
 
 private:
 	static Mesh *_mesh, *_referenceCubeMesh;
