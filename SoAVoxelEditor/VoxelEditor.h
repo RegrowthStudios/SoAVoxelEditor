@@ -60,14 +60,16 @@ public:
 
 	void brushRange();
 	void makeBrush(int x1, int y1, int z1, int x2, int y2, int z2);
+	void setBrush(Brush *brush);
 	void drawBrush();
 
+	VoxelGrid *getGrid(){ return _voxelGrid; }
+
 private:
-	const float _step = 0.1f, _maxStep = 100.0f;
+	const float _step = 0.1f;
 	glm::vec3 _clickStart, _clickDirection;
 	VoxelGrid *_voxelGrid;
     Voxel *_currentVoxel;
-	int _width, _height, _length;
 	int _cWidth, _cHeight, _cLength;
     char _state;
     vector < vector <Command*> > _commandStack, _fluxStack;

@@ -10,6 +10,7 @@ struct Voxel;
 class VoxelGrid {
 public:
     VoxelGrid(int width, int height, int length);
+	inline void setColor(GLubyte container[], int r, int g, int b, int a);
     bool addVoxel(const Voxel& newV, int x, int y, int z);//changed these to bools so editor knows if a command needs to be added to the command stack
     bool removeVoxel(int x, int y, int z);
     Voxel* getVoxel(int x, int y, int z);

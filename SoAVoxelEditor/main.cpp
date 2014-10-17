@@ -24,6 +24,7 @@
 #include "TextureManager.h"
 #include "Voxel.h"
 #include "Awesomium.h"
+#include "ModelLoading.h"
 
 #include <stdlib.h>
 #include <time.h> 
@@ -40,6 +41,7 @@ bool checkGlError();
 enum states{INITIALIZE, PLAY, EXIT};
 
 int gameState;
+bool pf = 0;
 
 SDL_Window *mainWindow;
 SDL_GLContext mainOpenGLContext;
@@ -47,6 +49,7 @@ SDL_GLContext mainOpenGLContext;
 Camera *mainCamera;
 
 VoxelEditor voxelEditor;
+ModelLoader nMod;
 
 int main(int argc, char **argv)
 {
@@ -106,6 +109,9 @@ void initialize()
 	mainCamera = new Camera();
 
 	gameState = PLAY;
+
+	nMod.initialize(&voxelEditor);
+	nMod.loadQuibicalBinary("Iron_anvil.qb");
 }
 
 void initializeSdlOpengl()
@@ -262,6 +268,7 @@ void control() {
                 voxelEditor.removeSelected();
                 break;
             case SDLK_p:
+				//pf = 1;
                for(int i = 0; i < 3; i++)
                     v.color[i] = rand() % 256;
                 v.color[3] = 255;

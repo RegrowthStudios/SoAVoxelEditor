@@ -1,5 +1,4 @@
 #include "VoxelRenderer.h"
-#include "GlobalStructs.h"
 #include "Shader.h"
 #include "Camera.h"
 #include "RenderUtil.h"

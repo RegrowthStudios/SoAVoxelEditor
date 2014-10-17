@@ -27,6 +27,13 @@ _voxelCount(0)
     }
 }
 
+inline void VoxelGrid::setColor(GLubyte container[], int r, int g, int b, int a){
+	container[0] = r;
+	container[1] = g;
+	container[2] = b;
+	container[3] = a;
+}
+
 bool VoxelGrid::addVoxel(const Voxel& newV, int x, int y, int z){
     Voxel *tempV = getVoxel(x, y, z);
     
@@ -51,8 +58,7 @@ bool VoxelGrid::removeVoxel(int x, int y, int z){
     if (!tempV) return false;
 
     if (tempV->type == '\0'){
-        //std::printf("Nothing to remove at <%d,%d,%d>.\n", x, y, z);
-		return false;
+        return false;
     } else {
         _voxelCount--;
         tempV->type = '\0';
@@ -69,7 +75,6 @@ Voxel* VoxelGrid::getVoxel(int x, int y, int z){
 }
 
 void VoxelGrid::drawGrid(Camera *camera) {
-
     //Opengl Resource for Opengl 3.3+ http://www.opengl-tutorial.org/
 
     //*************** here is some example draw code. This is temporary, and should not really be used. ****************
@@ -106,165 +111,85 @@ void VoxelGrid::drawGrid(Camera *camera) {
        
         sizeHolder = ((_width + 1) + (_length + 1)) * 2 + 16;
         std::vector<GridVertex> verts(sizeHolder);
-        int alpha = 255;
+        GLubyte red = 255, green = 0, blue = 0, alpha = 255;
 
         for (int j = 0; j < _width + 1; j++, i += 2){
-			verts[i].position = glm::vec3(_width - j, 0, 0);
-            
+			verts[i].position = glm::vec3(_width - j, 0, 0);           
 			verts[i + 1].position = glm::vec3(_width - j, 0, _length);
-
-            verts[i].color[0] = 255;
-            verts[i].color[1] = 0;
-            verts[i].color[2] = 0;
-            verts[i].color[3] = alpha;
-
-            verts[i + 1].color[0] = 255;
-            verts[i + 1].color[1] = 0;
-            verts[i + 1].color[2] = 0;
-            verts[i + 1].color[3] = alpha;
+			
+			setColor(verts[i].color, red, green, blue, alpha);           
+			setColor(verts[i + 1].color, red, green, blue, alpha);
         }
 
         for (int k = 0; k < _length + 1; k++, i += 2){
 			verts[i].position = glm::vec3(0, 0, _length - k);
-
 			verts[i + 1].position = glm::vec3(_width, 0, _length - k);
 
-            verts[i].color[0] = 255;
-            verts[i].color[1] = 0;
-            verts[i].color[2] = 0;
-            verts[i].color[3] = alpha;
-
-            verts[i + 1].color[0] = 255;
-            verts[i + 1].color[1] = 0;
-            verts[i + 1].color[2] = 0;
-            verts[i + 1].color[3] = alpha;
+			setColor(verts[i].color, red, green, blue, alpha);
+			setColor(verts[i + 1].color, red, green, blue, alpha);
         }
 
 		verts[i].position = glm::vec3(0, 0, 0);
-
 		verts[i + 1].position = glm::vec3(0, _height, 0);
-
-        verts[i].color[0] = 255;
-        verts[i].color[1] = 0;
-        verts[i].color[2] = 0;
-        verts[i].color[3] = alpha;
-
-        verts[i + 1].color[0] = 255;
-        verts[i + 1].color[1] = 0;
-        verts[i + 1].color[2] = 0;
-        verts[i + 1].color[3] = alpha;
+		
+		setColor(verts[i].color, red, green, blue, alpha);
+		setColor(verts[i + 1].color, red, green, blue, alpha);
 
         i += 2;
 
 		verts[i].position = glm::vec3(_width, 0, 0);
-
 		verts[i + 1].position = glm::vec3(_width, _height, 0);
 
-        verts[i].color[0] = 255;
-        verts[i].color[1] = 0;
-        verts[i].color[2] = 0;
-        verts[i].color[3] = alpha;
-
-        verts[i + 1].color[0] = 255;
-        verts[i + 1].color[1] = 0;
-        verts[i + 1].color[2] = 0;
-        verts[i + 1].color[3] = alpha;
-
+		setColor(verts[i].color, red, green, blue, alpha);
+		setColor(verts[i + 1].color, red, green, blue, alpha);
+        
         i += 2;
 
 		verts[i].position = glm::vec3(_width, 0, _length);
-
 		verts[i + 1].position = glm::vec3(_width, _height, _length);
 
-        verts[i].color[0] = 255;
-        verts[i].color[1] = 0;
-        verts[i].color[2] = 0;
-        verts[i].color[3] = alpha;
-
-        verts[i + 1].color[0] = 255;
-        verts[i + 1].color[1] = 0;
-        verts[i + 1].color[2] = 0;
-        verts[i + 1].color[3] = alpha;
-
+		setColor(verts[i].color, red, green, blue, alpha);
+		setColor(verts[i + 1].color, red, green, blue, alpha);
+        
         i += 2;
 
 		verts[i].position = glm::vec3(0, 0, _length);
-
 		verts[i + 1].position = glm::vec3(0, _height, _length);
 
-        verts[i].color[0] = 255;
-        verts[i].color[1] = 0;
-        verts[i].color[2] = 0;
-        verts[i].color[3] = alpha;
-
-        verts[i + 1].color[0] = 255;
-        verts[i + 1].color[1] = 0;
-        verts[i + 1].color[2] = 0;
-        verts[i + 1].color[3] = alpha;
-
+		setColor(verts[i].color, red, green, blue, alpha);
+		setColor(verts[i + 1].color, red, green, blue, alpha);
+      
         i += 2;
 
 		verts[i].position = glm::vec3(0, _height, 0);
-
 		verts[i + 1].position = glm::vec3(_width, _height, 0);
 
-        verts[i].color[0] = 255;
-        verts[i].color[1] = 0;
-        verts[i].color[2] = 0;
-        verts[i].color[3] = alpha;
-
-        verts[i + 1].color[0] = 255;
-        verts[i + 1].color[1] = 0;
-        verts[i + 1].color[2] = 0;
-        verts[i + 1].color[3] = alpha;
+		setColor(verts[i].color, red, green, blue, alpha);
+		setColor(verts[i + 1].color, red, green, blue, alpha);
 
         i += 2;
 
 		verts[i].position = glm::vec3(_width,_height,0);
-
 		verts[i+1].position = glm::vec3(_width,_height,_length);
 
-        verts[i].color[0] = 255;
-        verts[i].color[1] = 0;
-        verts[i].color[2] = 0;
-        verts[i].color[3] = alpha;
-
-        verts[i + 1].color[0] = 255;
-        verts[i + 1].color[1] = 0;
-        verts[i + 1].color[2] = 0;
-        verts[i + 1].color[3] = alpha;
+		setColor(verts[i].color, red, green, blue, alpha);
+		setColor(verts[i + 1].color, red, green, blue, alpha);
 
         i += 2;
 
 		verts[i].position = glm::vec3(_width,_height,_length);
-
 		verts[i + 1].position = glm::vec3(0,_height,_length);
 
-        verts[i].color[0] = 255;
-        verts[i].color[1] = 0;
-        verts[i].color[2] = 0;
-        verts[i].color[3] = alpha;
-
-        verts[i + 1].color[0] = 255;
-        verts[i + 1].color[1] = 0;
-        verts[i + 1].color[2] = 0;
-        verts[i + 1].color[3] = alpha;
+		setColor(verts[i].color, red, green, blue, alpha);
+		setColor(verts[i + 1].color, red, green, blue, alpha);
 
         i += 2;
 
 		verts[i].position = glm::vec3(0,_height,_length);
-
 		verts[i + 1].position = glm::vec3(0, _height, 0);
 
-        verts[i].color[0] = 255;
-        verts[i].color[1] = 0;
-        verts[i].color[2] = 0;
-        verts[i].color[3] = alpha;
-
-        verts[i + 1].color[0] = 255;
-        verts[i + 1].color[1] = 0;
-        verts[i + 1].color[2] = 0;
-        verts[i + 1].color[3] = alpha;
+		setColor(verts[i].color, red, green, blue, alpha);
+		setColor(verts[i + 1].color, red, green, blue, alpha);
 
         i += 2;
         //bind the buffers into the correct slots
@@ -286,8 +211,7 @@ void VoxelGrid::drawGrid(Camera *camera) {
     glLineWidth(1);
     glDrawArrays(GL_LINES, 0, sizeHolder);
 
-    gridShader.unBind();
-
+	gridShader.unBind();
 }
 
 void VoxelGrid::drawVoxels(Camera *camera) {

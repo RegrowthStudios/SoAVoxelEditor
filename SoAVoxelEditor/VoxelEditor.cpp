@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <set>
+#include <algorithm>
 
 //
 // VoxelEditor.cpp
@@ -23,9 +24,7 @@ VoxelEditor::~VoxelEditor()
 
 void VoxelEditor::initialize(int width, int height, int length) {
     _voxelGrid = new VoxelGrid(width, height, length);
-	_width = width;
-	_height = height;
-	_length = length;
+	
 	_cWidth = width / 32;
 	if (width % 32 != 0)
 		_cWidth++;
@@ -35,7 +34,6 @@ void VoxelEditor::initialize(int width, int height, int length) {
 	_cLength = length / 32;
 	if (length % 32 != 0)
 		_cLength++;
-	//_voxelGrid = new VoxelGrid(10, 10, 10);
     _currentVoxel = new Voxel;
     _currentVoxel->type = 'b';
     _currentVoxel->color[0] = 0;
@@ -252,6 +250,8 @@ void VoxelEditor::handleClick(){
 	Voxel *tempVox = _voxelGrid->getVoxel((int)tempV.x, (int)tempV.y, (int)tempV.z);
 
 	printf("Intersect at <%f,%f,%f>\n", (float)tempV.x, (float)tempV.y, (float)tempV.z);
+	printf("Start: <%f,%f,%f> Direction: <%f,%f,%f>\n", _clickStart.x, _clickStart.y, _clickStart.z, _clickDirection.x, _clickDirection.y, _clickDirection.z);
+	
 
 	switch (_state) {
 	case 's':
@@ -347,30 +347,44 @@ void VoxelEditor::handleClick(){
 
 void VoxelEditor::findIntersect(const glm::vec3 &startPosition, const glm::vec3 &direction) {
 	float i = 0.1f;
-    glm::vec3 base = direction, tempV;
+	float xd, yd, zd, maxStep;
+    glm::vec3 tempV;
+	Voxel *tempVox;
 
 	_clickStart = startPosition;
 	_clickDirection = direction;
-	if (_clickStart.x > _width && _clickDirection.x > 0.0 || _clickStart.y > _height && _clickDirection.y > 0.0 || _clickStart.z > _length && _clickDirection.z > 0.0){
+	if (_clickStart.x > (float)_voxelGrid->getWidth() && _clickDirection.x > 0.0 || _clickStart.y > (float)_voxelGrid->getHeight() && _clickDirection.y > 0.0 || _clickStart.z > (float)_voxelGrid->getLength() && _clickDirection.z > 0.0){
 		_currentIntersect = direction + startPosition;
 		return;
 	}
 	if (_clickStart.x < 0.0 && _clickDirection.x < 0.0 || _clickStart.y < 0.0 && _clickDirection.y < 0.0 || _clickStart.z < 0.0 && _clickDirection.z < 0.0){
-		
+		_currentIntersect = direction + startPosition;
+		return;
 	}
-
-
+	xd = _clickStart.x > 0.0 ? abs((_voxelGrid->getWidth()  - startPosition.x)/direction.x) : (-startPosition.x)/direction.x;
+	yd = _clickStart.y > 0.0 ? abs((_voxelGrid->getHeight() - startPosition.y)/direction.y) : (-startPosition.y)/direction.y;
+	zd = _clickStart.z > 0.0 ? abs((_voxelGrid->getLength() - startPosition.z)/direction.z) : (-startPosition.z)/direction.z;
+	maxStep = max(max(xd, yd), zd);
+	if (maxStep > 1000.0){
+		printf("Max Step is %f, x = <%f,%f,%f>\n", maxStep, xd,yd,zd);
+		printf("Start: <%f,%f,%f> End: <%f,%f,%f>\n", _clickStart.x, _clickStart.y, _clickStart.z, _clickDirection.x, _clickDirection.y, _clickDirection.z);
+	}
     drawDebugLine = false;
     debugP1 = startPosition;
 
-	while (i < _maxStep){
+	while (i < maxStep){
 		tempV = direction * i + startPosition;
-		if (_voxelGrid->getVoxel((int)tempV.x, (int)tempV.y, (int)tempV.z) != NULL && _voxelGrid->getVoxel((int)tempV.x, (int)tempV.y, (int)tempV.z)->type != 0 && _voxelGrid->getVoxel((int)tempV.x, (int)tempV.y, (int)tempV.z)->type != '\0'){
+		tempVox = _voxelGrid->getVoxel((int)tempV.x, (int)tempV.y, (int)tempV.z);
+		if (tempVox != NULL && tempVox->type != 0 && tempVox->type != '\0'){
 			//cout << _voxelGrid->getVoxel(tempV.x, tempV.y, tempV.z)->type << endl;
 			_currentIntersect = tempV;
 			break;
 		}
 		else if ((tempV.x < 0 && direction.x < 0) || (tempV.z < 0 && direction.z < 0) || (tempV.y < 0 && direction.y < 0)){
+			_currentIntersect = tempV;
+			break;
+		}
+		else if ((tempV.x > _voxelGrid->getWidth() && direction.x > 0.0) || (tempV.y > _voxelGrid->getHeight() && direction.y > 0.0) || (tempV.z > _voxelGrid->getLength() && direction.z > 0.0)){
 			_currentIntersect = tempV;
 			break;
 		}
@@ -399,6 +413,7 @@ void VoxelEditor::brushRange(){
 void VoxelEditor::makeBrush(int x1, int y1, int z1, int x2, int y2, int z2){
 	vector <bool> coords;
 	Voxel *tv;
+	Brush *tBrush;
 	
 	int startX = x1 < x2 ? x1 : x2;
 	int startY = y1 < y2 ? y1 : y2;
@@ -411,40 +426,31 @@ void VoxelEditor::makeBrush(int x1, int y1, int z1, int x2, int y2, int z2){
 	l = endZ - startZ + 1;
 	w = endX - startX + 1;
 	h = endY - startY + 1;
-	_currentBrush = new Brush();
-	_currentBrush->height = h;
-	_currentBrush->width = w;
-	_currentBrush->length = l;
-	_currentBrush->voxels.resize(l*w*h);
+	tBrush = new Brush();
+	tBrush->height = h;
+	tBrush->width = w;
+	tBrush->length = l;
+	tBrush->voxels.resize(l*w*h);
 	for (int i = startX; i <= endX; i++) {
 		for (int j = startY; j <= endY; j++) {
 			for (int k = startZ; k <= endZ; k++) {
 				tv = _voxelGrid->getVoxel(i, j, k);
-				_currentBrush->voxels[(k - startZ)*w*h + (j - startY)*w + (i - startX)] = *tv;
-				//if (tv != nullptr && tv->type != '\0' && tv->type != 0){
-				//	coords[(k - startZ)*w*h + (j - startY)*w + (i - startX)] = 1;
-				//}
+				tBrush->voxels[(k - startZ)*w*h + (j - startY)*w + (i - startX)] = *tv;
 			}
 		}
 	}
 
-
-	//coords.resize(l*w*h, 0);
-	//for (int i = startX; i <= endX; i++) {
-	//	for (int j = startY; j <= endY; j++) {
-	//		for (int k = startZ; k <= endZ; k++) {
-	//			tv = _voxelGrid->getVoxel(i, j, k);
-	//			if (tv != nullptr && tv->type != '\0' && tv->type != 0){
-	//				coords[(k - startZ)*w*h + (j - startY)*w + (i - startX)] = 1;
-	//				_brushVoxelCoords.push_back(glm::vec3(i - startX, j - startY, k - startZ));
-	//				_brushVoxels.push_back(*tv);
-	//			}
-	//		}
-	//	}
-	//}
-
-	RenderUtil::meshBrush(_currentBrush);
+	setBrush(tBrush);
 	printf("Brush created\n");
+}
+
+void VoxelEditor::setBrush(Brush *brush){
+	if (_currentBrush != NULL){
+		delete _currentBrush;
+		_currentBrush = NULL;
+	}
+	_currentBrush = brush;
+	RenderUtil::meshBrush(_currentBrush);
 }
 
 void VoxelEditor::drawBrush(){//if brush is blocked by a voxel it will just skip over it
@@ -463,19 +469,6 @@ void VoxelEditor::drawBrush(){//if brush is blocked by a voxel it will just skip
 		return;
 	}
 
-	//for (int i = 0; i < _brushVoxelCoords.size(); i++){//checks if the brush can be drawn in the given dimensions
-	//	if ((int)_currentIntersect.x + _brushVoxelCoords[i].x >= _voxelGrid->getWidth())
-	//		return;
-	//	if ((int)_currentIntersect.y + _brushVoxelCoords[i].y >= _voxelGrid->getHeight())
-	//		return;
-	//	if ((int)_currentIntersect.z + _brushVoxelCoords[i].z >= _voxelGrid->getHeight())
-	//		return;
-	//	if (_voxelGrid->getVoxel((int)_currentIntersect.x + _brushVoxelCoords[i].x, (int)_currentIntersect.y + _brushVoxelCoords[i].y, (int)_currentIntersect.z + _brushVoxelCoords[i].z)->type != 0){
-	//		printf("Brush blocked\n");
-	//		return;
-	//	}
-	//}
-	
 	vector <Command*> tempComList;
 
 	for (int i = 0; i < (int)_currentBrush->voxels.size(); i++){
@@ -548,14 +541,12 @@ void VoxelEditor::execute(vector <Command*> lCom) {
 				}
 			}
 			if (chunkCheck == 0){
-				//printf("Adding chunk %d for remeshing\n", (int)(lCom[i]->coord.z / 32) * _cWidth * _cHeight + (lCom[i]->coord.y / 32) * _cWidth + (lCom[i]->coord.x / 32));
 				chunks.push_back(currentChunk);
 			}
 			chunkCheck = 0;
 			break;
 		}
 	}
-	//cout << "done\n";
 	_voxelGrid->remesh(chunks);
 }
 

@@ -1,7 +1,6 @@
 #include "RenderUtil.h"
 #include "Camera.h"
 #include "Shader.h"
-#include "GlobalStructs.h"
 #include "Errors.h"
 #include "Voxel.h"
 
@@ -289,6 +288,7 @@ void RenderUtil::drawReferenceVoxel(class Camera* camera, const glm::vec3 positi
 				_brushVerts[i].position.y += diff.y;
 				_brushVerts[i].position.z += diff.z;
 			}
+			cout << _brushVerts[0].color[0] << endl;
 			RenderUtil::uploadMesh(&_referenceCubeMesh->vboID, &_referenceCubeMesh->iboID, &_brushVerts[0], _brushVerts.size(), _brushIndices, (_brushVerts.size() / 4) * 6);
 		}
 		_lastPosition = position;
