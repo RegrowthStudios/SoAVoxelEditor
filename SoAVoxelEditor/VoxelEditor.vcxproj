@@ -73,8 +73,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\Nathan\Documents\VoxelEditor\deps\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Nathan\Documents\VoxelEditor\deps\lib;$(LibraryPath);$(AWE_DIR)build\lib</LibraryPath>
+    <IncludePath>..\deps\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\deps\lib;$(LibraryPath);$(AWE_DIR)build\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);C:\Users\Nathan\Documents\VoxelEditor\deps\lib;</LibraryPath>
@@ -85,7 +85,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Nathan\Documents\VoxelEditor\deps\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\deps\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
