@@ -41,11 +41,11 @@ inline void setColor(unsigned int c, Voxel tv){
 }
 
 ModelData *ModelLoader::loadQuibicalBinary(string file){
-	int uiBuff;
+	int uiBuff, checker;
 	char version[4];
 	unsigned int colorFormat = 0, zAxisOrientation = 0, compression = 0, vMaskEncoded = 0, numMatrices = 0;
-	const unsigned int CODEFLAG = 2;
-	const unsigned int NEXTSLICEFLAG = 6;
+	const int CODEFLAG = 2;
+	const int NEXTSLICEFLAG = 6;
 	int fCheck[6];
 	char ui[4];
 	FILE *in;
@@ -68,16 +68,6 @@ ModelData *ModelLoader::loadQuibicalBinary(string file){
 	fread(&vMaskEncoded, sizeof(unsigned int), 1, in);
 	fread(&numMatrices, sizeof(unsigned int), 1, in);
 	printf("colorFormat: %u\nzAxisOrientation: %u\ncompression: %u\nvMaskEncoded: %u\nnumMatrices: %u\n", colorFormat, zAxisOrientation, compression, vMaskEncoded, numMatrices);
-
-	//fCheck[0] = fscanf_s(in, "%u", &version);
-	//fCheck[1] = fscanf_s(in, "%u", &colorFormat);
-	//fCheck[2] = fscanf_s(in, "%u", &zAxisOrientation);
-	//fCheck[3] = fscanf_s(in, "%u", &compression);
-	//fCheck[4] = fscanf_s(in, "%u", &vMaskEncoded);
-	//fCheck[5] = fscanf_s(in, "%u", &numMatrices);
-	//printf("fCheck: %d, %d, %d, %d, %d, %d\n", fCheck[0], fCheck[1], fCheck[2], fCheck[3], fCheck[4], fCheck[5]);
-	//printf("version: %u\ncolorFormat: %u\nzAxisOrientation: %u\ncompression: %u\nvMaskEncoded: %u\nnumMatrices: %u\n", version, colorFormat, zAxisOrientation, compression, vMaskEncoded, numMatrices);
-	//cin >> uiBuff;
 
 
 	int nameLength = 0;
@@ -124,13 +114,15 @@ ModelData *ModelLoader::loadQuibicalBinary(string file){
 
 				while (1){
 					fread(&data, sizeof(unsigned int), 1, in);
-
+					//printf("Data: %u\n", data);
 					if (data == NEXTSLICEFLAG){
+						printf("Next slice hit\n");
 						break;
 					}
 					else if (data == CODEFLAG){
 						fread(&count, sizeof(unsigned int), 1, in);
 						fread(&data, sizeof(unsigned int), 1, in);
+						//printf("Count: %u\n", count);
 						
 						for (unsigned int j = 0; j < count; j++){
 							x = index % sizeX + 1;
@@ -139,14 +131,21 @@ ModelData *ModelLoader::loadQuibicalBinary(string file){
 							/*if (x >= sizeX || y >= sizeY || z >= sizeZ){
 								printf("Out of bounds: <%d,%d,%d>\n", x,y,z);
 							}*/
-							if (x >= sizeX){
-								printf("X out of bounds\n");
+							/*if (x >= sizeX){
+								printf("X:%d out of bounds, sizeX=%u\n", x, sizeX);
+								cin >> checker;
 							}
 							if (y >= sizeY){
-								printf("Y out of bounds\n");
+								printf("Y:%d out of bounds, sizeY=%u\n", y, sizeY);
+								cin >> checker;
 							}
 							if (z >= sizeZ){
-								printf("Z out of bounds\n");
+								printf("Z:%d out of bounds, sizeZ=%u\n", z, sizeZ);
+								cin >> checker;
+							}*/
+							if (z*sizeX*sizeY + y*sizeX + x >= sizeX*sizeY*sizeZ){
+								printf("Attempt to access matrix element at index: %d, <%u,%u,%u>\n", (int)(z*sizeX*sizeY + y*sizeX + x), x, y, z);
+								cin >> checker;
 							}
 							matrix[z*sizeX*sizeY + y*sizeX + x] = data;
 						}
