@@ -12,13 +12,15 @@ struct BoundingBox{
 
 class ModelData{
 public:
-	ModelData(Brush *brush, BoundingBox bb);
+	ModelData(Brush *brush, BoundingBox bb, string f);
 	Brush *getBrush(){ return &_brush; }
 	BoundingBox getBoundingBox(){ return _bBox; }
+	string getFileName(){ return _fileName; }
 
 private:
 	Brush _brush;
 	BoundingBox _bBox;
+	string _fileName;
 };
 
 class Model{
@@ -41,6 +43,6 @@ public:
 	ModelData *loadQuibicalBinary(string file);
 
 private:
-	vector <ModelData*> loadedModels;
+	vector <ModelData*> _loadedModels;
 	VoxelEditor *_voxelEditor;
 };

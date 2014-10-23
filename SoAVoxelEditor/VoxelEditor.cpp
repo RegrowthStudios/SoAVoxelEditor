@@ -450,6 +450,10 @@ void VoxelEditor::setBrush(Brush *brush){
 		_currentBrush = NULL;
 	}
 	_currentBrush = brush;
+	for (int i = 0; i < 10; i++){
+		printf("Voxel %d color: <%d,%d,%d,%d> type: %c\n", i, _currentBrush->voxels[i].color[0], _currentBrush->voxels[i].color[1], _currentBrush->voxels[i].color[2], _currentBrush->voxels[i].color[3], _currentBrush->voxels[i].type);
+	}
+	printf("Brush <w,h,l> = <%d,%d,%d>\n", _currentBrush->width, _currentBrush->height, _currentBrush->length);
 	RenderUtil::meshBrush(_currentBrush);
 }
 

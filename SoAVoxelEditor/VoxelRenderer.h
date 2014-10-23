@@ -10,7 +10,7 @@ class VoxelRenderer
 {
 public:
     static void initialize(int w, int h, int l);
-    static void drawVoxels(class Camera* camera);
+    //static void drawVoxels(class Camera* camera);
 	static void drawChunks(class Camera* camera);
     static void selectVoxel(int x, int y, int z, bool selected);
 	static void remesh(Voxel *voxels, int width, int height, int length, vector<int> chunks);

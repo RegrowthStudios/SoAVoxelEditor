@@ -23,7 +23,6 @@
 #include "VoxelEditor.h"
 #include "TextureManager.h"
 #include "Voxel.h"
-#include "Awesomium.h"
 #include "ModelLoading.h"
 
 #include <stdlib.h>
@@ -98,7 +97,7 @@ void initialize()
 	std::cin >> input;
 	length = std::stoi(input);*/
     //voxelEditor.initialize(width, height, length);
-	voxelEditor.initialize(100, 100, 100);
+	voxelEditor.initialize(200, 200, 200);
 
 	initializeShaders();
 	
@@ -111,7 +110,6 @@ void initialize()
 	gameState = PLAY;
 
 	nMod.initialize(&voxelEditor);
-	nMod.loadQuibicalBinary("Iron_anvil.qb");
 }
 
 void initializeSdlOpengl()
@@ -319,6 +317,13 @@ void control() {
 			case SDLK_b:
 				voxelEditor.brushRange();
 				break;
+			case SDLK_o:
+				string tempName;
+				printf("File name for qubical binary: ");
+				cin >> tempName;
+				nMod.loadQuibicalBinary(tempName);
+				//nMod.loadQuibicalBinary("Iron_anvil.qb");
+				//nMod.loadQuibicalBinary("nerds.qb");
             }
 			break;
 		case SDL_KEYUP:

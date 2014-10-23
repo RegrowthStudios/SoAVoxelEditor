@@ -25,8 +25,8 @@ void VoxelRenderer::initialize(int w, int h, int l) {
 
     int cubeTot = w*h*l;
 
-    _currentVerts.reserve(24 * cubeTot);
-    _currentIndices = new GLuint[cubeTot * 36];
+    //_currentVerts.reserve(24 * cubeTot);
+    //_currentIndices = new GLuint[cubeTot * 36];
 
 	int xc, yc, zc;
 	xc = w / 32;
@@ -57,14 +57,14 @@ void VoxelRenderer::initialize(int w, int h, int l) {
 		_chunkIndices[i + 5] = j;
 	}
 
-    for (int i = 0, j = 0; i < w*h*l * 36; i += 6, j+=4){
-        _currentIndices[i] = j;
-        _currentIndices[i + 1] = j + 1;
-        _currentIndices[i + 2] = j + 2;
-        _currentIndices[i + 3] = j + 2;
-        _currentIndices[i + 4] = j + 3;
-        _currentIndices[i + 5] = j;
-    }
+    //for (int i = 0, j = 0; i < w*h*l * 36; i += 6, j+=4){
+    //    _currentIndices[i] = j;
+    //    _currentIndices[i + 1] = j + 1;
+    //    _currentIndices[i + 2] = j + 2;
+    //    _currentIndices[i + 3] = j + 2;
+    //    _currentIndices[i + 4] = j + 3;
+    //    _currentIndices[i + 5] = j;
+    //}
 
     for (int i = 0; i < 24; i++){
         _baseMesh.verts[i].position.x = cubeVertices[i * 3];
@@ -91,50 +91,50 @@ void VoxelRenderer::initialize(int w, int h, int l) {
     _mesh.vboID = 0;
 }
 
-void VoxelRenderer::drawVoxels(Camera *camera) {
-    blockShader.bind();
-
-    const glm::vec3 &position = camera->getPosition();
-
-    glm::mat4 modelMatrix(1);
-    modelMatrix[3][0] = -position.x;
-    modelMatrix[3][1] = -position.y;
-    modelMatrix[3][2] = -position.z;
-
-    glm::mat4 MVP = camera->getProjectionMatrix() * camera->getViewMatrix() * modelMatrix;
-
-    //send our uniform data, the matrix, the light position, and the texture data
-    glUniformMatrix4fv(blockShader.mvpID, 1, GL_FALSE, &MVP[0][0]);
-
-    glm::vec3 lightPos = position;
-    lightPos = glm::normalize(lightPos);
-    glUniform3f(blockShader.lightPosID, lightPos.x, lightPos.y, lightPos.z);
-
-    const int numIndices = (6 * _currentVerts.size()) / 4;
-
-    //initialize the buffer, only happens once
-    if (_changed){
-        RenderUtil::uploadMesh(&_mesh.vboID, &_mesh.iboID, &_currentVerts[0], _currentVerts.size(), _currentIndices, numIndices);
-        _changed = false;
-    } else {
-        glBindBuffer(GL_ARRAY_BUFFER, _mesh.vboID);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _mesh.iboID);
-    }
-
-    //set our attribute pointers using our interleaved vertex data. Last parameter is offset into the vertex
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(BlockVertex), (void *)0); //vertexPosition
-    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(BlockVertex), (void *)12); //vertexColor
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(BlockVertex), (void *)16); //vertexNormal
-
-    //Finally, draw our data. The last parameter is the offset into the bound buffer
-    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
-
-    blockShader.unBind();
-
-    if (drawDebugLine){
-        RenderUtil::drawLine(camera, debugP1, debugP2, 255, 0, 255, 5);
-    }
-}
+//void VoxelRenderer::drawVoxels(Camera *camera) {
+//    blockShader.bind();
+//
+//    const glm::vec3 &position = camera->getPosition();
+//
+//    glm::mat4 modelMatrix(1);
+//    modelMatrix[3][0] = -position.x;
+//    modelMatrix[3][1] = -position.y;
+//    modelMatrix[3][2] = -position.z;
+//
+//    glm::mat4 MVP = camera->getProjectionMatrix() * camera->getViewMatrix() * modelMatrix;
+//
+//    //send our uniform data, the matrix, the light position, and the texture data
+//    glUniformMatrix4fv(blockShader.mvpID, 1, GL_FALSE, &MVP[0][0]);
+//
+//    glm::vec3 lightPos = position;
+//    lightPos = glm::normalize(lightPos);
+//    glUniform3f(blockShader.lightPosID, lightPos.x, lightPos.y, lightPos.z);
+//
+//    const int numIndices = (6 * _currentVerts.size()) / 4;
+//
+//    //initialize the buffer, only happens once
+//    if (_changed){
+//        RenderUtil::uploadMesh(&_mesh.vboID, &_mesh.iboID, &_currentVerts[0], _currentVerts.size(), _currentIndices, numIndices);
+//        _changed = false;
+//    } else {
+//        glBindBuffer(GL_ARRAY_BUFFER, _mesh.vboID);
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _mesh.iboID);
+//    }
+//
+//    //set our attribute pointers using our interleaved vertex data. Last parameter is offset into the vertex
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(BlockVertex), (void *)0); //vertexPosition
+//    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(BlockVertex), (void *)12); //vertexColor
+//    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(BlockVertex), (void *)16); //vertexNormal
+//
+//    //Finally, draw our data. The last parameter is the offset into the bound buffer
+//    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, NULL);
+//
+//    blockShader.unBind();
+//
+//    if (drawDebugLine){
+//        RenderUtil::drawLine(camera, debugP1, debugP2, 255, 0, 255, 5);
+//    }
+//}
 
 void VoxelRenderer::drawChunks(Camera *camera) {
 	blockShader.bind();
