@@ -7,6 +7,7 @@
 #include "TextureManager.h"
 #include "VoxelGrid.h"
 #include <iostream>
+#include "Timing.h"
 
 bool VoxelRenderer::_changed;
 vector <BlockVertex> VoxelRenderer::_currentVerts;
@@ -137,6 +138,7 @@ void VoxelRenderer::initialize(int w, int h, int l) {
 //}
 
 void VoxelRenderer::drawChunks(Camera *camera) {
+
 	blockShader.bind();
 
 	const glm::vec3 &position = camera->getPosition();
@@ -194,7 +196,8 @@ void VoxelRenderer::selectVoxel(int x, int y, int z, bool selected) {
 }
 
 void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vector<int> chunks){
-	
+	PreciseTimer timer;
+	timer.start();
 	
 	//_currentVerts.clear();
 	for (int i = 0; i < (int)chunks.size(); i++){
@@ -374,4 +377,5 @@ void VoxelRenderer::remesh(Voxel *voxels, int width, int height, int length, vec
 			}
 		}
 	}
+	printf("Mesh brush took %fms\n", timer.stop());
 }

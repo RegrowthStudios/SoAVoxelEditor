@@ -326,10 +326,11 @@ void RenderUtil::changeReferenceColor(glm::vec4 color){
 	}
 }
 
-inline void RenderUtil::addFace(int start, int end, glm::vec3 pos){
+inline void RenderUtil::addFace(BlockVertex* verts, glm::vec3 pos){
 	BlockVertex tv;
-	for (int i = start; i < end; i++){
-		tv = _voxBaseVerts.verts[i];
+	#define VERTS_PER_QUAD 4
+	for (int i = 0; i < VERTS_PER_QUAD; i++){
+		tv = *(verts++);
 		tv.position += pos;
 		_brushVerts.push_back(tv);
 	}
@@ -339,58 +340,70 @@ void RenderUtil::meshBrush(Brush *brush){
 	_brushVerts.clear();
 	BlockVertex tv;
 
+	int voxelIndex;
+
+// Constants for readability
+#define FRONT_INDEX 0
+#define RIGHT_INDEX 4
+#define TOP_INDEX 8
+#define LEFT_INDEX 12
+#define BOTTOM_INDEX 16
+#define BACK_INDEX 20
+
+
 	printf("creating brush mesh\n");
 	for (int z = 0; z < brush->length; z++){
 		for (int y = 0; y < brush->height; y++){
 			for (int x = 0; x < brush->width; x++){
-				if (brush->voxels[z*brush->width*brush->height + y*brush->width + x].type != '\0'){
-					if (z < brush->length - 1){
-						if (brush->voxels[(z + 1)*brush->width*brush->height + y*brush->width + x].type == '\0'){
-							addFace(0, 4, glm::vec3(x, y, z));
+				voxelIndex = z*brush->width*brush->height + y*brush->width + x;
+				if (brush->voxels[voxelIndex].type != '\0'){
+					if (z < brush->length - 1){//Front face
+						if (brush->voxels[voxelIndex + (brush->height + brush->width)].type == '\0'){
+							addFace(&_voxBaseVerts.verts[FRONT_INDEX], glm::vec3(x, y, z));
 						}
 					}
 					else{
-						addFace(0, 4, glm::vec3(x, y, z));
+						addFace(&_voxBaseVerts.verts[FRONT_INDEX], glm::vec3(x, y, z));
 					}
-					if (x < brush->width - 1){
-						if (brush->voxels[z*brush->width*brush->height + y*brush->width + x + 1].type == '\0'){
-							addFace(4, 8, glm::vec3(x, y, z));
+					if (x < brush->width - 1){//Right face
+						if (brush->voxels[voxelIndex + 1].type == '\0'){
+							addFace(&_voxBaseVerts.verts[RIGHT_INDEX], glm::vec3(x, y, z));
 						}
 					}
 					else{
-						addFace(4, 8, glm::vec3(x, y, z));
+						addFace(&_voxBaseVerts.verts[RIGHT_INDEX], glm::vec3(x, y, z));
 					}
-					if (y < brush->height - 1){
-						if (brush->voxels[z*brush->width*brush->height + (y + 1)*brush->width + x].type == '\0'){
-							addFace(8, 12, glm::vec3(x, y, z));
+					if (y < brush->height - 1){//Top face
+						if (brush->voxels[voxelIndex + brush->width].type == '\0'){
+							addFace(&_voxBaseVerts.verts[TOP_INDEX], glm::vec3(x, y, z));
 						}
 					}
 					else{
-						addFace(8, 12, glm::vec3(x, y, z));
+						addFace(&_voxBaseVerts.verts[TOP_INDEX], glm::vec3(x, y, z));
 					}
-					if (x > 0){
-						if (brush->voxels[z*brush->width*brush->height + y*brush->width + x - 1].type == '\0'){
-							addFace(12, 16, glm::vec3(x, y, z));
+					if (x > 0){//Left face
+						if (brush->voxels[voxelIndex - 1].type == '\0'){
+							addFace(&_voxBaseVerts.verts[LEFT_INDEX], glm::vec3(x, y, z));
 						}
 					}
 					else{
-						addFace(12, 16, glm::vec3(x, y, z));
+						addFace(&_voxBaseVerts.verts[LEFT_INDEX], glm::vec3(x, y, z));
 					}
-					if (y > 0){
-						if (brush->voxels[z*brush->width*brush->height + (y - 1)*brush->width + x].type == '\0'){
-							addFace(16, 20, glm::vec3(x, y, z));
+					if (y > 0){//bottom face
+						if (brush->voxels[voxelIndex - brush->width].type == '\0'){
+							addFace(&_voxBaseVerts.verts[BOTTOM_INDEX], glm::vec3(x, y, z));
 						}
 					}
 					else{
-						addFace(16, 20, glm::vec3(x, y, z));
+						addFace(&_voxBaseVerts.verts[BOTTOM_INDEX], glm::vec3(x, y, z));
 					}
-					if (z > 0){
-						if (brush->voxels[(z - 1)*brush->width*brush->height + y*brush->width + x].type == '\0'){
-							addFace(20, 24, glm::vec3(x, y, z));
+					if (z > 0){//Back face
+						if (brush->voxels[voxelIndex - (brush->width * brush->height)].type == '\0'){
+							addFace(&_voxBaseVerts.verts[BACK_INDEX], glm::vec3(x, y, z));
 						}
 					}
 					else{
-						addFace(20, 24, glm::vec3(x, y, z));
+						addFace(&_voxBaseVerts.verts[BACK_INDEX], glm::vec3(x, y, z));
 					}
 				}
 			}

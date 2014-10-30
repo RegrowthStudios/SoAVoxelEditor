@@ -21,6 +21,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="Timing.h" />
     <ClInclude Include="Voxel.h" />
     <ClInclude Include="VoxelEditor.h" />
     <ClInclude Include="VoxelGrid.h" />
@@ -39,6 +40,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="Timing.cpp" />
     <ClCompile Include="VoxelEditor.cpp" />
     <ClCompile Include="VoxelGrid.cpp" />
     <ClCompile Include="VoxelRenderer.cpp" />

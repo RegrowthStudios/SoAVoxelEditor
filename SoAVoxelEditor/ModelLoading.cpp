@@ -50,7 +50,7 @@ inline Voxel setColor(UINT32 c, Voxel tv){
 }
 
 ModelData *ModelLoader::loadQuibicalBinary(string file){
-	for (int i = 0; i < _loadedModels.size(); i++){
+	for (int i = 0; i < (int)_loadedModels.size(); i++){
 		if (file == _loadedModels[i]->getFileName()){
 			_voxelEditor->setBrush(_loadedModels[i]->getBrush());
 			printf("File %s already in memory\n", file);
@@ -58,13 +58,11 @@ ModelData *ModelLoader::loadQuibicalBinary(string file){
 		}
 	}
 
-	int uiBuff, checker;
+	int uiBuff;
 	char version[4], ext;
 	UINT32 colorFormat = 0, zAxisOrientation = 0, compression = 0, vMaskEncoded = 0, numMatrices = 0;
 	const int CODEFLAG = 2;
 	const int NEXTSLICEFLAG = 6;
-	int fCheck[6];
-	char ui[4];
 	FILE *in;
 
 	fopen_s(&in, file.c_str(), "rb");
@@ -117,16 +115,16 @@ ModelData *ModelLoader::loadQuibicalBinary(string file){
 		matrixList.push_back(matrix);
 
 		if (!compression){
-			for (UINT32 z = 0; z < sizeZ; z++){
-				for (UINT32 y = 0; y < sizeY; y++){
-					for (UINT32 x = 0; x < sizeX; x++){
+			for (int z = 0; z < (int)sizeZ; z++){
+				for (int y = 0; y < (int)sizeY; y++){
+					for (int x = 0; x < (int)sizeX; x++){
 						fread(&matrix[z*sizeX*sizeY + y*sizeX + x], sizeof(UINT32), 1, in);
 					}
 				}
 			}
 		}
 		else{
-			UINT32 x = 0, y = 0, z = 0;
+			int x = 0, y = 0, z = 0;
 			
 			while (z < (int)sizeZ){
 				z++;
@@ -142,7 +140,7 @@ ModelData *ModelLoader::loadQuibicalBinary(string file){
 						fread(&count, sizeof(UINT32), 1, in);
 						fread(&data, sizeof(UINT32), 1, in);
 						
-						for (int j = 0; j < count; j++){
+						for (int j = 0; j < (int)count; j++){
 							x = index % sizeX;
 							y = index / sizeX;
 							index++;
@@ -170,7 +168,7 @@ ModelData *ModelLoader::loadQuibicalBinary(string file){
 		}
 		if (colorFormat){//changes format from BGRA to RGBA
 			UINT32 tempContainer = 0;
-			for (UINT32 i = 0; i < sizeX*sizeY*sizeZ; i++){
+			for (int i = 0; i < (int)(sizeX*sizeY*sizeZ); i++){
 				tempContainer = (matrix[i] >> 16) & secondByte;//assigns B to the second byte
 				tempContainer = (tempContainer & secondByte) | ((matrix[i] << 16) & fourthByte);//assigns R to the fourth byte and maintains B
 				tempContainer = (tempContainer & (secondByte | fourthByte)) | (matrix[i] & (firstByte | thirdByte));//assigns G and A while maintaining R and B

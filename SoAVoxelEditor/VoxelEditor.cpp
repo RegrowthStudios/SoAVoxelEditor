@@ -7,6 +7,7 @@
 #include <string>
 #include <set>
 #include <algorithm>
+#include "Timing.h"
 
 //
 // VoxelEditor.cpp
@@ -458,6 +459,9 @@ void VoxelEditor::setBrush(Brush *brush){
 }
 
 void VoxelEditor::drawBrush(){//if brush is blocked by a voxel it will just skip over it
+	PreciseTimer timer;
+	timer.start();
+	
 	vector <int> chunks;
 	bool chunkCheck = 0;
 	int x, y, z;
@@ -480,29 +484,32 @@ void VoxelEditor::drawBrush(){//if brush is blocked by a voxel it will just skip
 		y = i % (_currentBrush->height * _currentBrush->width) / _currentBrush->width;
 		x = i % (_currentBrush->height * _currentBrush->width) % _currentBrush->width;
 
-		if (_voxelGrid->addVoxel(_currentBrush->voxels[i] , x + (int)_currentIntersect.x, y + (int)_currentIntersect.y, z + (int)_currentIntersect.z)){
-			Command* c = new Command;
-			c->type = 'i';
-			c->coord = glm::vec3(x + (int)_currentIntersect.x, y + (int)_currentIntersect.y, z + (int)_currentIntersect.z);
-			c->v = new Voxel;
-			*c->v = _currentBrush->voxels[i];
-			int cChunk = ((int)c->coord.z / 32)*_cWidth * _cHeight + ((int)c->coord.y / 32)*_cWidth + ((int)c->coord.x / 32);
-			for (int j = 0; j < (int)chunks.size(); j++){
-				if (chunks[j] == cChunk){
-					chunkCheck = 1;
-					break;
+		if (_currentBrush->voxels[z*_currentBrush->height*_currentBrush->width + y * _currentBrush->width + x].type != '\0'){
+			if (_voxelGrid->addVoxel(_currentBrush->voxels[i], x + (int)_currentIntersect.x, y + (int)_currentIntersect.y, z + (int)_currentIntersect.z)){
+				Command* c = new Command;
+				c->type = 'i';
+				c->coord = glm::vec3(x + (int)_currentIntersect.x, y + (int)_currentIntersect.y, z + (int)_currentIntersect.z);
+				c->v = new Voxel;
+				*c->v = _currentBrush->voxels[i];
+				int cChunk = ((int)c->coord.z / 32)*_cWidth * _cHeight + ((int)c->coord.y / 32)*_cWidth + ((int)c->coord.x / 32);
+				for (int j = 0; j < (int)chunks.size(); j++){
+					if (chunks[j] == cChunk){
+						chunkCheck = 1;
+						break;
+					}
 				}
+				if (!chunkCheck){
+					chunks.push_back(cChunk);
+				}
+				chunkCheck = 0;
+				tempComList.push_back(c);
 			}
-			if (!chunkCheck){
-				chunks.push_back(cChunk);
-			}
-			chunkCheck = 0;
-			tempComList.push_back(c);
 		}
 	}
 
 	_voxelGrid->remesh(chunks);
 	if (tempComList.size() > 0) newCommand(tempComList);
+	printf("Draw Brush brush took %fms\n", timer.stop());
 }
 
 //a more functionality is added, more cases need to be created for undo/redo

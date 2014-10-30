@@ -23,7 +23,7 @@ public:
 	static void drawReferenceVoxel(class Camera* camera, glm::vec3 position, Brush *brush);
 	static void changeReferenceColor(glm::vec4 color);
 	static void meshBrush(Brush *brush);
-	static inline void addFace(int start, int end, glm::vec3 pos);
+	static inline void addFace(BlockVertex* verts, glm::vec3 pos);
 
 private:
 	static Mesh *_mesh, *_referenceCubeMesh;
